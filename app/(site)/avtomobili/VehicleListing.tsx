@@ -144,9 +144,10 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
       />
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] lg:gap-16">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — height-bounded to the viewport with its own scroll,
+          so the full filter stack (many brands) is always reachable. */}
       <aside className="hidden lg:block">
-        <div className="sticky top-28">
+        <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain" data-lenis-prevent>
           <FilterSidebar
             filters={filters}
             counts={counts}

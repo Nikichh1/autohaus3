@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/fx/ScrollProgress";
 import { Grain } from "@/components/fx/Grain";
 import { Cursor } from "@/components/fx/Cursor";
+import { TrackPageView } from "@/components/fx/TrackPageView";
 
 /**
  * Public marketing-site chrome. Everything that used to live in the root layout
@@ -32,6 +33,7 @@ export default function SiteLayout({
       </SmoothScroll>
       <Grain />
       <Cursor />
+      <TrackPageView />
     </>
   );
 }

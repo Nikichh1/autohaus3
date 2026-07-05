@@ -194,6 +194,22 @@ model VehicleView {
   @@index([createdAt])
 }
 
+// Site-wide page views — privacy-friendly (no IP; an ephemeral per-session id
+// stored client-side is the only visitor key). Powers the admin analytics:
+// traffic, unique-ish visitors, most-visited pages and device split.
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String? // referrer host only ("google.com"), never the full URL
+  sessionId String // random id kept in sessionStorage — approximates a visitor
+  device    String? // "mobile" | "desktop"
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@index([sessionId])
+}
+
 model AuditLog {
   id         String   @id @default(cuid())
   actorId    String?

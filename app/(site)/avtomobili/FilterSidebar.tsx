@@ -39,7 +39,7 @@ export function FilterSidebar({
   onClose,
 }: FilterSidebarProps) {
   return (
-    <div className="panel-metal edge-light flex h-full flex-col gap-1 rounded-[1.25rem] p-6">
+    <div className="panel-metal edge-light flex flex-col gap-1 rounded-[1.25rem] p-6">
       {/* Mobile-only header */}
       {onClose && (
         <div className="flex items-center justify-between border-b border-line pb-4 lg:hidden">
@@ -55,7 +55,7 @@ export function FilterSidebar({
         </div>
       )}
 
-      <FilterGroup title="Марка" defaultOpen>
+      <FilterGroup title="Марка" defaultOpen scroll>
         {brands.map((brand) => (
           <FilterCheckbox
             key={brand}
@@ -73,7 +73,7 @@ export function FilterSidebar({
         ))}
       </FilterGroup>
 
-      <FilterGroup title="Тип каросерия">
+      <FilterGroup title="Тип каросерия" scroll>
         {bodyTypes.map((body) => (
           <FilterCheckbox
             key={body}
@@ -205,10 +205,13 @@ export function FilterSidebar({
 function FilterGroup({
   title,
   defaultOpen = false,
+  scroll = false,
   children,
 }: {
   title: string;
   defaultOpen?: boolean;
+  /** Long option lists (brands, body types) get their own capped scroll area. */
+  scroll?: boolean;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -227,7 +230,17 @@ function FilterGroup({
           )}
         />
       </button>
-      {open && <div className="mt-4 flex flex-col gap-1">{children}</div>}
+      {open && (
+        <div
+          className={cn(
+            "mt-4 flex flex-col gap-1",
+            scroll && "no-scrollbar max-h-64 overflow-y-auto overscroll-contain pr-1",
+          )}
+          data-lenis-prevent={scroll ? "" : undefined}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }
