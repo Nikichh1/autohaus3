@@ -1,0 +1,888 @@
+@import "tailwindcss";
+
+/*
+  AutoHaus design tokens — Tailwind CSS v4
+  Dark mode is the brand default. Light mode activates when `.light` is added to <html>.
+  Tokens declared in @theme generate utilities automatically (bg-base, text-fg, etc.).
+*/
+
+@theme {
+  /* Brand palette — dark mode defaults */
+  /* Graphite & Titanium — cool, modern, almost-monochrome luxury.
+     Refined: deeper obsidian blacks, a cleaner surface ramp and a brighter
+     brushed-titanium accent so the dark beats read as cut metal, not grey. */
+  --color-base: #08090c;
+  /* `ink` mirrors `base` — used as a TEXT color on light/accent fills.
+     (Can't use `text-base` for color: it collides with Tailwind's font-size.) */
+  --color-ink: #08090c;
+  --color-surface: #101216;
+  --color-elevated: #181b21;
+  --color-fg: #f5f7f9;
+  --color-fg-muted: #969ea8;
+  --color-fg-subtle: #6a727c;
+  --color-accent: #c9cfd6;
+  --color-accent-warm: #dee2e7;
+  --color-accent-deep: #8e959d;
+  --color-line: rgb(245 247 249 / 0.09);
+  --color-line-strong: rgb(245 247 249 / 0.18);
+  --color-overlay: rgb(8 9 12 / 0.62);
+
+  /* Type families — values injected by next/font in layout.tsx */
+  --font-display: var(--font-manrope), "Manrope", system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-serif: var(--font-playfair), "Playfair Display", Georgia, serif;
+  /* Condensed poster display (product pages) — generates `font-mega`. */
+  --font-mega: var(--font-oswald), "Oswald", "Arial Narrow", system-ui, sans-serif;
+
+  /* Editorial display type scale — paired line-height + tracking + weight */
+  --text-display-2xs: 1.875rem;
+  --text-display-2xs--line-height: 1.05;
+  --text-display-2xs--letter-spacing: -0.02em;
+  --text-display-2xs--font-weight: 700;
+
+  --text-display-xs: 2.5rem;
+  --text-display-xs--line-height: 1.02;
+  --text-display-xs--letter-spacing: -0.025em;
+  --text-display-xs--font-weight: 700;
+
+  --text-display-sm: 3.5rem;
+  --text-display-sm--line-height: 1;
+  --text-display-sm--letter-spacing: -0.03em;
+  --text-display-sm--font-weight: 700;
+
+  --text-display-md: 5rem;
+  --text-display-md--line-height: 0.98;
+  --text-display-md--letter-spacing: -0.035em;
+  --text-display-md--font-weight: 800;
+
+  --text-display-lg: 7rem;
+  --text-display-lg--line-height: 0.94;
+  --text-display-lg--letter-spacing: -0.04em;
+  --text-display-lg--font-weight: 800;
+
+  --text-display-xl: 9rem;
+  --text-display-xl--line-height: 0.92;
+  --text-display-xl--letter-spacing: -0.045em;
+  --text-display-xl--font-weight: 800;
+
+  --text-display-2xl: 11rem;
+  --text-display-2xl--line-height: 0.9;
+  --text-display-2xl--letter-spacing: -0.05em;
+  --text-display-2xl--font-weight: 800;
+
+  /* Editorial body sizes — looser tracking for readability */
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.1;
+  --text-eyebrow--letter-spacing: 0.2em;
+  --text-eyebrow--font-weight: 500;
+
+  /* Containers */
+  --container-narrow: 56rem;
+  --container-content: 80rem;
+  --container-wide: 90rem;
+
+  /* Motion */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light theme — applies at :root (global toggle) OR on any container with
+   class="light", so sections can alternate dark/light moods on one page. */
+:root.light,
+.light {
+  --color-base: #f1f2f4;
+  --color-ink: #f1f2f4;
+  --color-surface: #ffffff;
+  --color-elevated: #e6e8eb;
+  /* near-black ink for crisp editorial type on paper */
+  --color-fg: #0a0c0f;
+  --color-fg-muted: #51585f;
+  --color-fg-subtle: #767c84;
+  /* accent darkens to steel on light so it stays visible */
+  --color-accent: #565d66;
+  --color-accent-warm: #444a52;
+  --color-accent-deep: #33383f;
+  --color-line: rgb(10 12 15 / 0.09);
+  --color-line-strong: rgb(10 12 15 / 0.16);
+  --color-overlay: rgb(241 242 244 / 0.62);
+}
+
+/* ───────────────  Titanium material system (product pages)  ───────────────
+   Graphite + titanium: layered metal surfaces, machined edges, glass and a
+   light sheen on hover. Rich and engineered — never flat black, never
+   industrial. Pairs with the dark graphite/titanium tokens. */
+
+/* Rich graphite page field — lifted off pure black for a lighter, more premium
+   depth (titanium-tinted highlight up top, never a flat heavy black). */
+.field-graphite {
+  background:
+    radial-gradient(135% 95% at 50% -12%, #232832 0%, #161a21 42%, #0e1116 100%);
+}
+/* Softer graphite — for large content areas that previously felt too heavy. */
+.field-graphite-soft {
+  background:
+    radial-gradient(120% 90% at 50% 0%, #20242c 0%, #15181e 55%, #11141a 100%);
+}
+
+/* Satin-graphite elevated panel (cards) — lifted for contrast against the field */
+.panel-metal {
+  background: linear-gradient(160deg, #1f242c 0%, #12151a 100%);
+  border: 1px solid rgb(245 247 249 / 0.11);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    0 30px 70px -44px rgb(0 0 0 / 0.85);
+}
+
+/* ───────────────  Cinematic product page (vehicle detail)  ───────────────
+   The Claude-Design "Кинематографична" layout. A single saturated accent drives
+   CTAs, glows, badges and graphics (blue here — swap the four --va* / --va-glow
+   values to retint every product page at once). A champagne-gold secondary (--vg)
+   carries trust, rental and provenance. Scoping --color-accent here means every
+   existing `*-accent` utility inside a product page turns blue automatically —
+   the same per-scope variable override the site already uses for `.light`. */
+/* Product page — LIGHT, sectioned luxury: a warm cream canvas with dark "islands"
+   for drama. Scoping the theme tokens here flips every token-based child to the
+   light palette; wrap any dark section in `.vd-dark` to get correct light-on-dark
+   inside it (the same per-scope override the site already uses for `.light`). */
+.vehicle-detail {
+  --color-base: #efeee6;
+  --color-ink: #efeee6;            /* mirrors base → used as text ON dark/accent fills */
+  --color-surface: #ffffff;
+  --color-elevated: #f7f6ef;
+  --color-fg: #15161a;
+  --color-fg-muted: #6a6a64;
+  --color-fg-subtle: #9a9a90;
+  --color-accent: #15161a;         /* monochrome emphasis = ink on cream */
+  --color-accent-warm: #2b2c2e;
+  --color-accent-deep: #000000;
+  --color-line: rgb(18 18 20 / 0.10);
+  --color-line-strong: rgb(18 18 20 / 0.17);
+  color-scheme: light;
+  background: var(--color-base);
+
+  /* monochrome accent ramp (ink) + neutral secondary — auto-recolors components */
+  --va: #15161a; --va-bright: #2b2c2e; --va-deep: #000000; --va-soft: #4a4a46; --va-pale: #cfcfc7; --va-glow: 21 22 26;
+  --vg: #6a6a64; --vg-soft: #7a7a72; --vg-deep: #55554f; --vg-pale: #d8d8cf; --vg-glow: 106 106 100;
+}
+
+/* Dark island — graphite + titanium palette for hero / drama bands. */
+.vd-dark {
+  --color-base: #111214;
+  --color-ink: #111214;
+  --color-surface: #181a1d;
+  --color-elevated: #202327;
+  --color-fg: #eef0f2;
+  --color-fg-muted: #a7aab0;
+  --color-fg-subtle: #70737a;
+  --color-accent: #c9cfd6;         /* titanium */
+  --color-accent-warm: #dee2e7;
+  --color-accent-deep: #9aa1a9;
+  --color-line: rgb(238 240 242 / 0.10);
+  --color-line-strong: rgb(238 240 242 / 0.18);
+  --va: #c9cfd6; --va-bright: #dee2e7; --va-deep: #9aa1a9; --va-soft: #c9cfd6; --va-pale: #eef0f2; --va-glow: 201 207 214;
+  --vg: #c9cfd6; --vg-soft: #dee2e7; --vg-deep: #9aa1a9; --vg-pale: #eef0f2; --vg-glow: 201 207 214;
+  color-scheme: dark;
+}
+
+/* Dark hero card surface — graphite with quiet depth. */
+.vd-hero-card {
+  background: radial-gradient(125% 95% at 76% 8%, #20242c 0%, #14171c 46%, #0a0c10 100%);
+}
+
+/* Light editorial card — white, hairline, soft luxe shadow; lifts on hover. */
+.vd-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 1px 2px rgb(18 18 22 / 0.04), 0 20px 44px -30px rgb(18 18 22 / 0.26);
+  transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo);
+}
+.vd-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 2px 4px rgb(18 18 22 / 0.05), 0 34px 70px -34px rgb(18 18 22 / 0.34);
+}
+@media (prefers-reduced-motion: reduce) { .vd-card-hover:hover { transform: none; } }
+
+/* Primary pill — auto-inverts with the active theme (dark pill on cream,
+   light pill on dark). Mirrors the monochrome CTAs in the references. */
+.vd-pill {
+  background: var(--color-fg);
+  color: var(--color-base);
+  transition: transform 0.3s var(--ease-out-expo), opacity 0.3s, box-shadow 0.3s;
+}
+.vd-pill:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -16px rgb(18 18 22 / 0.4); }
+@media (prefers-reduced-motion: reduce) { .vd-pill:hover { transform: none; } }
+
+/* Refined bracketed micro-label — "[ ABOUT ]" treatment from the references. */
+.vd-eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-fg-subtle);
+}
+
+/* Corner-notched "UI box" — the landonorris floating stat-card shape. */
+.vd-notch {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+.vd-notch-bl {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+
+/* Cut-corner "telemetry" panels — a notched top-right corner (sharp 2–3px feel). */
+.vd-cut { clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); }
+.vd-cut-lg { clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%); }
+/* Both top corners chamfered — used on the closing CTA panel. */
+.vd-cut-both { clip-path: polygon(0 26px, 26px 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); }
+
+/* Mega display headline — condensed Oswald, tight, uppercase. */
+.font-mega {
+  font-family: var(--font-mega);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+}
+
+/* Word-mask reveal wrapper (split-text). Each word sits in an overflow-clip span. */
+.vd-word { display: inline-block; overflow: hidden; vertical-align: top; }
+
+/* Brushed-titanium numeral fill (price/stat hero numbers). */
+.text-titanium-num {
+  background: linear-gradient(180deg, #fff 0%, #cdd3da 46%, #9aa1a9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Price — white melting into the accent tint. */
+.text-accent-num {
+  background: linear-gradient(180deg, #fff 0%, var(--va-pale) 46%, var(--va-soft) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Financing monthly — white melting into champagne. */
+.text-gold-num {
+  background: linear-gradient(180deg, #fff 0%, var(--vg-pale) 50%, var(--vg) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Solid accent CTA — blue gradient pill with a soft glow lift. */
+.btn-accent {
+  background: linear-gradient(180deg, var(--va), var(--va-deep));
+  color: #fff;
+  box-shadow: 0 14px 30px -12px rgb(var(--va-glow) / 0.6);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+.btn-accent:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 20px 42px -12px rgb(var(--va-glow) / 0.78);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-accent:hover { transform: none; }
+}
+
+/* Champagne "trust" card — warm graphite with a gold hairline. */
+.panel-gold {
+  background: linear-gradient(180deg, #211c1a, #14110f);
+  border: 1px solid rgb(var(--vg-glow) / 0.22);
+}
+
+/* ── Cinematic editorial helpers (Awwwards-grade product page) ── */
+
+/* Oversized outlined "ghost" type — futuristic watermark behind hero/sections. */
+.text-stroke {
+  -webkit-text-stroke: 1px var(--color-line-strong);
+  color: transparent;
+}
+.text-stroke-accent {
+  -webkit-text-stroke: 1.5px rgb(var(--va-glow) / 0.5);
+  color: transparent;
+}
+
+/* Radial mask — fades a photo's edges into the page so the subject "floats". */
+.vd-mask-fade {
+  -webkit-mask-image: radial-gradient(72% 78% at 50% 46%, #000 52%, transparent 86%);
+  mask-image: radial-gradient(72% 78% at 50% 46%, #000 52%, transparent 86%);
+}
+
+/* Seamless marquee — duplicated track translated -50% (content is doubled). */
+@keyframes vd-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.vd-marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: vd-marquee var(--vd-marquee-dur, 38s) linear infinite;
+}
+.vd-marquee-track.reverse { animation-direction: reverse; }
+.vd-marquee:hover .vd-marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .vd-marquee-track { animation: none; }
+}
+
+/* Premium loader curtain — wipes up to reveal the page. */
+@keyframes vd-curtain {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 100% 0); }
+}
+
+/* Slow drift for decorative shapes (GPU transform only). */
+@keyframes vd-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
+}
+.vd-float { animation: vd-float 7s ease-in-out infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .vd-float { animation: none; } }
+
+/* Continuous slow rotation (rotating badge / moving decorative objects). */
+@keyframes vd-spin { to { transform: rotate(360deg); } }
+.vd-spin { animation: vd-spin 20s linear infinite; will-change: transform; transform-origin: 50% 50%; }
+.vd-spin-rev { animation: vd-spin 26s linear infinite reverse; }
+@media (prefers-reduced-motion: reduce) { .vd-spin, .vd-spin-rev { animation: none; } }
+
+/* Thin scroll-cue line that pulses downward. */
+@keyframes vd-scrollcue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  40% { transform: scaleY(1); transform-origin: top; }
+  60% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+.vd-scrollcue { animation: vd-scrollcue 2.2s var(--ease-out-expo) infinite; }
+@media (prefers-reduced-motion: reduce) { .vd-scrollcue { animation: none; opacity: 0.5; } }
+
+/* Range input themed to the accent (financing sliders). */
+.range-accent input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 99px;
+  background: rgb(245 247 249 / 0.14);
+  outline: none;
+}
+.range-accent input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #fff, var(--va));
+  border: 2px solid var(--va);
+  box-shadow: 0 4px 14px -2px rgb(var(--va-glow) / 0.6);
+  cursor: pointer;
+}
+.range-accent input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--va);
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+
+/* Premium frosted-glass panel */
+.panel-glass {
+  background: rgb(20 23 28 / 0.55);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgb(245 247 249 / 0.12);
+}
+
+/* Brushed-titanium accent — subtle machined grain (small strips / chips) */
+.brushed {
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.07), transparent 38%),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.022) 0 1px, transparent 1px 2.5px),
+    linear-gradient(120deg, #2b3036 0%, #171a1f 100%);
+}
+
+/* Carbon-fibre weave — use sparingly as an accent */
+.carbon {
+  background-color: #0d0f12;
+  background-image:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.04) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.028) 0 1px, transparent 1px 3px);
+  background-size: 5px 5px;
+}
+
+/* Metallic light-sweep on hover — polished metal catching light */
+.sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 42%, rgb(255 255 255 / 0.07) 50%, transparent 58%);
+  transform: translateX(-130%);
+  transition: transform 1s var(--ease-out-expo);
+}
+.sheen:hover::after { transform: translateX(130%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen::after { transition: none; }
+}
+
+/* ─────────────────  Liquid Glass — floating nav material  ─────────────────
+   A clean, smooth translucent pane: a faint top→bottom light gradient gives the
+   glass quiet depth (no texture, no pattern), a gentle lower inner-shadow reads
+   as a subtle lens, and a soft float shadow lifts it off the page. The crisp
+   top hairline comes from `.edge-light`; the blurred/saturated backdrop from the
+   `backdrop-blur-* backdrop-saturate-*` UTILITIES on the element (Lightning CSS /
+   Tailwind v4 strips a raw `backdrop-filter` from a custom rule, so it must be a
+   utility or inline style). A refined evolution of the original header — not
+   generic glassmorphism, not busy. */
+.glass-pane {
+  background:
+    linear-gradient(180deg, rgb(245 247 249 / 0.06) 0%, rgb(245 247 249 / 0) 46%),
+    linear-gradient(180deg, rgb(17 20 25 / 0.55) 0%, rgb(8 9 12 / 0.64) 100%);
+  border: 1px solid rgb(245 247 249 / 0.10);
+  box-shadow:
+    inset 0 -24px 48px -34px rgb(0 0 0 / 0.50), /* gentle lower lens depth */
+    0 26px 58px -34px rgb(0 0 0 / 0.64);        /* soft float shadow */
+}
+
+@layer base {
+  html {
+    background: var(--color-base);
+    color: var(--color-fg);
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Kill the grey tap-flash on touch — buttons get bespoke press feedback. */
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.light { color-scheme: light; }
+
+  body {
+    font-family: var(--font-sans);
+    overscroll-behavior-y: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: #0a0a0a;
+  }
+
+  img, video { display: block; max-width: 100%; height: auto; }
+}
+
+/* Lenis smooth-scroll integration — required CSS hooks */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: clip; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+@layer utilities {
+  /* Editorial eyebrow label */
+  .eyebrow {
+    font-size: var(--text-eyebrow);
+    line-height: var(--text-eyebrow--line-height);
+    letter-spacing: var(--text-eyebrow--letter-spacing);
+    font-weight: var(--text-eyebrow--font-weight);
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+  }
+
+  /* Subtle hairline divider */
+  .hairline { border-color: var(--color-line); }
+
+  /* Image hover scale wrapper */
+  .img-zoom { overflow: hidden; }
+  .img-zoom > * { transition: transform 1200ms var(--ease-out-expo); will-change: transform; }
+  .img-zoom:hover > * { transform: scale(1.04); }
+
+  /* Edge-fade for horizontal scrollers */
+  .edge-fade-x {
+    mask-image: linear-gradient(90deg, transparent 0, #000 4rem, #000 calc(100% - 4rem), transparent 100%);
+  }
+
+  /* Cinematic radial vignette for dark vehicle staging (Koenigsegg) */
+  .vignette::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      120% 120% at 50% 42%,
+      transparent 52%,
+      rgb(0 0 0 / 0.55) 100%
+    );
+  }
+
+  /* Hide scrollbar but keep scrollability */
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* Warm gold spotlight glow behind a subject (Koenigsegg hero) */
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(
+      60% 50% at 58% 32%,
+      rgb(201 169 97 / 0.28),
+      rgb(201 169 97 / 0.06) 38%,
+      transparent 64%
+    );
+  }
+
+  /* Break an element out of its container to full viewport width */
+  .full-bleed {
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Film-grain overlay (animated via @keyframes grain-jitter) */
+  .grain-overlay {
+    position: fixed;
+    inset: -12%;
+    z-index: 55;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    mix-blend-mode: soft-light;
+  }
+
+  /* Animate the grain ONLY on precise-pointer devices (desktop). */
+  @media (hover: hover) and (pointer: fine) {
+    .grain-overlay {
+      animation: grain-jitter 0.5s steps(3) infinite;
+      will-change: transform;
+    }
+  }
+
+  /* Phones drop the film grain entirely. A fixed, full-screen soft-light blend
+     layer forces the compositor to re-blend the whole viewport on every scroll
+     frame — a real source of touch-scroll jank — and at 5% opacity it's barely
+     visible on a small screen anyway. The cheap vignette gradient stays. */
+  @media (hover: none), (pointer: coarse) {
+    .grain-overlay { display: none; }
+  }
+
+  /* Faint cinematic vignette framing the whole viewport */
+  .vignette-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 54;
+    pointer-events: none;
+    background: radial-gradient(
+      130% 130% at 50% 50%,
+      transparent 70%,
+      rgb(0 0 0 / 0.13) 100%
+    );
+  }
+
+  /* Perspective stage for 3D-transformed children (vehicle drive) */
+  .stage-3d {
+    perspective: 1600px;
+    transform-style: preserve-3d;
+  }
+
+  /* Layered, soft luxury elevation for editorial cards (light surfaces) */
+  .shadow-luxe {
+    box-shadow:
+      0 1px 2px rgb(8 9 12 / 0.04),
+      0 12px 26px -14px rgb(8 9 12 / 0.18),
+      0 44px 80px -44px rgb(8 9 12 / 0.42);
+  }
+  /* Deep cinematic elevation for dark surfaces */
+  .shadow-cinema {
+    box-shadow: 0 40px 110px -50px rgb(0 0 0 / 0.85);
+  }
+
+  /* Specular top hairline — a 1px gradient that catches light along an edge.
+     Premium on glass nav bars and elevated cards. Parent should be relative. */
+  .edge-light::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.28) 18%,
+      rgb(255 255 255 / 0.28) 82%,
+      transparent
+    );
+  }
+
+  /* Fine tracked label — small uppercase metadata, tighter than .eyebrow */
+  .label-fine {
+    font-size: 0.6875rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Brushed-titanium text fill — for hero numerals only, used sparingly */
+  .text-titanium {
+    background: linear-gradient(180deg, #ffffff 0%, #cdd3da 46%, #9aa1a9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ── Film-sheet seam — each chapter slides over the previous like a card of
+     film stock: a tight machined radius (engineered, not soft), a specular
+     hairline along the leading edge and a deep shadow underneath. Pair with a
+     negative top margin on the section. border-radius alone clips the
+     background (no overflow-hidden, so position:sticky inside keeps working). */
+  .sheet {
+    position: relative;
+    z-index: 1;
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 -36px 80px -44px rgb(0 0 0 / 0.6);
+  }
+  .sheet::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.22) 20%,
+      rgb(255 255 255 / 0.22) 80%,
+      transparent
+    );
+  }
+}
+
+/* ───────────────  Admin skeleton shimmer  ───────────────
+   Instant loading placeholders for the admin panel. A soft sheen sweeps across
+   a muted block while server data streams in — so navigation never shows a
+   blank frozen screen. Honors reduced-motion. */
+.admin-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-elevated);
+  border-radius: 0.5rem;
+}
+.admin-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.06),
+    transparent
+  );
+  animation: admin-shimmer 1.5s ease-in-out infinite;
+}
+:root.light .admin-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.05), transparent);
+}
+@keyframes admin-shimmer {
+  100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-skeleton::after { animation: none; }
+}
+
+/* Animated equalizer bars — the "engine sound" badge on vehicle cards. */
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq 0.9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eq-bar { animation: none; }
+}
+
+@keyframes grain-jitter {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-1.4%, 1%); }
+  40% { transform: translate(1.4%, -1%); }
+  60% { transform: translate(-1%, -1.4%); }
+  80% { transform: translate(1%, 1.4%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Custom cursor — hide the native pointer when the bespoke cursor is active,
+   but keep a usable cursor over embedded iframes (maps) it can't track. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+html.has-cursor iframe {
+  cursor: auto !important;
+}
+/* Text entry keeps the native I-beam — a bespoke dot over a caret is hostile. */
+html.has-cursor input,
+html.has-cursor textarea,
+html.has-cursor select {
+  cursor: auto !important;
+}
+
+/* ── Bespoke cursor mark — all morphs live here as CSS transitions so pointer
+   movement never touches React. The wrapper is positioned via translate3d from
+   JS; the mark centres itself and changes size/skin per data-mode. */
+.ah-cursor-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%) scale(var(--press, 1));
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid transparent;
+  mix-blend-mode: difference;
+  transition:
+    width 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.18s ease;
+}
+.ah-cursor[data-mode="hidden"] .ah-cursor-mark { opacity: 0; }
+.ah-cursor[data-mode="link"] .ah-cursor-mark {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border-color: #fff;
+}
+/* Lens modes — a piece of optical glass held over the media: the backdrop is
+   refracted (blur + saturation lift + brightness), a specular highlight rides
+   the top edge and the lower rim falls into shadow. Material, not decoration. */
+.ah-cursor[data-mode="view"] .ah-cursor-mark,
+.ah-cursor[data-mode="scroll"] .ah-cursor-mark {
+  mix-blend-mode: normal;
+  background: rgb(255 255 255 / 0.05);
+  border-color: rgb(255 255 255 / 0.45);
+  backdrop-filter: blur(6px) saturate(1.5) brightness(1.12);
+  -webkit-backdrop-filter: blur(6px) saturate(1.5) brightness(1.12);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.4),
+    inset 0 -10px 18px -10px rgb(0 0 0 / 0.55),
+    0 8px 30px -12px rgb(0 0 0 / 0.5);
+}
+.ah-cursor[data-mode="view"] .ah-cursor-mark { width: 84px; height: 84px; }
+.ah-cursor[data-mode="scroll"] .ah-cursor-mark { width: 68px; height: 68px; }
+.ah-cursor[data-pressed] .ah-cursor-mark { --press: 0.85; }
+.ah-cursor-label {
+  color: #fff;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.22s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ah-cursor[data-mode="view"] .ah-cursor-label,
+.ah-cursor[data-mode="scroll"] .ah-cursor-label {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* The chapter rail steps out of frame while the opening film owns the viewport. */
+[data-chapter-rail] {
+  transition: opacity 0.5s var(--ease-emphasized);
+}
+html[data-intro-active] [data-chapter-rail] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Hide the site nav while the scroll-scrubbed cinematic intro owns the viewport;
+   it fades back in as the intro dissolves into the hero. */
+[data-site-nav] {
+  transition: opacity 0.5s var(--ease-emphasized);
+}
+html[data-intro-active] [data-site-nav] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ───────────────  True page-to-page transition (View Transitions API)  ───────
+   Used only for the homepage → Vehicles CTA (provider tags `data-vt="slide"`).
+   The Home page sits ON TOP and physically slides away to the LEFT — scaling
+   back and casting a soft shadow onto the page beneath — while the Vehicles page
+   is revealed underneath, easing IN FROM THE RIGHT and resolving from a dim,
+   soft blur into full focus. One page genuinely replaces the other; the screen
+   is never hidden. Fast, layered, cinematic. Unsupported browsers just navigate.
+   `vt-fast` shortens it further (used for the back direction / quick swaps). */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-vt="slide"]::view-transition-group(root) {
+    animation-duration: 0.28s;
+  }
+  /* Home — leaving — on top, snaps off to the left with a touch of depth. */
+  html[data-vt="slide"]::view-transition-old(root) {
+    z-index: 2;
+    animation-name: vt-home-leave;
+    animation-duration: 0.28s;
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+  /* Vehicles — arriving — beneath, snaps in from the right into focus. */
+  html[data-vt="slide"]::view-transition-new(root) {
+    z-index: 1;
+    animation-name: vt-vehicles-enter;
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes vt-home-leave {
+  from {
+    transform: translateX(0) scale(1);
+    filter: drop-shadow(4px 0 14px rgba(0, 0, 0, 0.16));
+  }
+  to {
+    transform: translateX(-100%) scale(0.97);
+    filter: drop-shadow(24px 0 44px rgba(0, 0, 0, 0.4));
+  }
+}
+
+@keyframes vt-vehicles-enter {
+  from {
+    transform: translateX(9%) scale(1.025);
+    filter: blur(2px) brightness(0.9);
+  }
+  to {
+    transform: translateX(0) scale(1);
+    filter: blur(0) brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain-overlay {
+    animation: none;
+  }
+}

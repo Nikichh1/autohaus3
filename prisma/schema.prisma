@@ -1,0 +1,283 @@
+// AutoHaus Admin — database schema.
+// Provider is PostgreSQL (Neon) for both local dev and production — point
+// DATABASE_URL at your Neon connection string (a Neon branch works well for local).
+// Enums are modeled as validated strings (see lib/admin/constants.ts) and `features`
+// is a JSON-encoded string; both could later be promoted to native Postgres enums /
+// arrays, but are kept as strings so the app code stays unchanged.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Pooled connection (host contains "-pooler") — used by the app at runtime.
+  url      = env("DATABASE_URL")
+  // Direct, un-pooled connection — used only by `prisma migrate`/`db push`.
+  // On Neon, get this from the dashboard by UNticking "Pooled connection".
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────── Auth (Better Auth) ───────────────────────────
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("read_only") // see ROLES in lib/admin/constants.ts
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions       Session[]
+  accounts       Account[]
+  createdVehicles Vehicle[] @relation("vehicleCreatedBy")
+  assignedLeads  Lead[]         @relation("leadAssignee")
+  leadActivities LeadActivity[] @relation("leadActivityAuthor")
+  notifications  Notification[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─────────────────────────────── Vehicles ─────────────────────────────────
+model Vehicle {
+  id             String  @id @default(cuid())
+  slug           String  @unique
+  status         String  @default("draft") // draft | available | reserved | sold | archived
+  featured       Boolean @default(false)
+
+  brand          String
+  model          String
+  variant        String?
+  year           Int
+  bodyType       String  @default("")
+  collection     String  @default("signature") // performance | executive | signature
+
+  fuelType       String  @default("petrol")
+  transmission   String  @default("automatic")
+  drivetrain     String  @default("rwd")
+
+  price          Int     @default(0) // EUR
+  priceOnRequest Boolean @default(false)
+  rentalPerDay   Int?
+
+  mileage        Int     @default(0)
+  power          Int     @default(0)
+  torque         Int?
+  engineCC       Int?
+  acceleration   Float?
+  topSpeed       Int?
+  doors          Int?
+  seats          Int?
+  exteriorColor  String?
+  interiorColor  String?
+  vin            String?
+
+  features       String  @default("[]") // JSON-encoded string[]
+  description    String  @default("")
+  internalNotes  String?
+
+  // Engine sound (signature feature)
+  engineSoundUrl       String?
+  engineSoundName      String?
+  engineSoundFormat    String? // mp3 | wav | m4a
+  engineSoundDuration  Float?  // seconds
+  engineSoundSize      Int?    // bytes
+  engineSoundPeaks     String? // JSON-encoded number[] (waveform), computed at upload
+  engineSoundPublished Boolean @default(false)
+  engineSoundUpdatedAt DateTime?
+
+  images         VehicleImage[]
+
+  createdById    String?
+  createdBy      User?   @relation("vehicleCreatedBy", fields: [createdById], references: [id])
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  publishedAt    DateTime?
+  soldAt         DateTime?
+  reservedUntil  DateTime?
+  archivedAt     DateTime?
+
+  @@index([status])
+  @@index([featured])
+  @@index([brand, model])
+  @@index([collection])
+  @@index([createdAt])
+}
+
+model Setting {
+  group       String   @id // contact | social | hours | branding
+  value       String   // JSON blob for the group
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
+
+model ContentBlock {
+  key         String   @id // registry key, e.g. "home.hero.headline"
+  value       String
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+model VehicleView {
+  id          String   @id @default(cuid())
+  vehicleSlug String
+  vehicleId   String?
+  createdAt   DateTime @default(now())
+
+  @@index([vehicleSlug])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorEmail String?
+  action     String // e.g. vehicle.update, lead.delete, settings.update
+  entityType String?
+  entityId   String?
+  summary    String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([entityType, entityId])
+}
+
+model MediaAsset {
+  id           String   @id @default(cuid())
+  url          String   @unique
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  folder       String   @default("general")
+  tags         String   @default("[]") // JSON-encoded string[]
+  alt          String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([folder])
+  @@index([createdAt])
+}
+
+model Lead {
+  id            String   @id @default(cuid())
+  status        String   @default("new") // new | contacted | qualified | won | lost | spam
+  source        String   @default("contact_form") // contact_form | vehicle_inquiry
+  name          String
+  email         String?
+  phone         String?
+  message       String?
+  vehicleSlug   String?
+  vehicleLabel  String?
+  assigneeId    String?
+  assignee      User?    @relation("leadAssignee", fields: [assigneeId], references: [id])
+  consentGdpr   Boolean  @default(true)
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastContactAt DateTime?
+
+  activities    LeadActivity[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([assigneeId])
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation("leadActivityAuthor", fields: [authorId], references: [id])
+  type      String // created | note | status | assignment
+  body      String?
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+model VehicleImage {
+  id        String   @id @default(cuid())
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  url       String
+  position  Int      @default(0)
+  isPrimary Boolean  @default(false)
+  width     Int?
+  height    Int?
+  alt       String?
+  createdAt DateTime @default(now())
+
+  @@index([vehicleId, position])
+}

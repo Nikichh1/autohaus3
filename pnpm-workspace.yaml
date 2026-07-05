@@ -1,0 +1,19 @@
+# Native dependencies that are allowed to run their install/build scripts.
+# pnpm 10+ blocks lifecycle scripts by default; without this, `pnpm install`
+# fails with ERR_PNPM_IGNORED_BUILDS (and so does the Vercel build).
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@swc/core'
+  - prisma
+  - sharp
+  - unrs-resolver

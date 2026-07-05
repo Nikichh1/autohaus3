@@ -1,0 +1,585 @@
+// AutoHaus Admin — PostgreSQL schema (Prisma)
+// Buildable starting point. Mirrors the existing Vehicle type in types/index.ts and
+// extends it for the full admin platform. Run: prisma migrate dev.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres", "postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm, citext, uuid_ossp(map: "uuid-ossp")]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+enum FuelType      { petrol diesel hybrid electric }
+enum Transmission  { manual automatic }
+enum Drivetrain    { fwd rwd awd }
+enum Collection    { performance executive signature }
+enum BusinessUnit  { cars rental service auto_spa cafe leasing insurance bakery corporate }
+
+enum VehicleStatus { draft available reserved sold archived }
+enum MediaStatus   { uploading processing ready failed }
+enum MediaKind     { image video document image360 }
+
+enum UserStatus    { invited active suspended locked deactivated }
+enum LeadStatus    { new contacted qualified test_drive negotiating won lost spam }
+enum LeadSource    { website_form phone email whatsapp walk_in referral marketplace import }
+enum ApprovalState { pending approved rejected cancelled }
+enum NotifChannel  { in_app email push }
+enum CmsStatus     { draft in_review published scheduled archived }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH · USERS · RBAC   (Better Auth backs Session/Account; app owns Role/Permission)
+// ─────────────────────────────────────────────────────────────────────────────
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique @db.Citext
+  emailVerified   Boolean   @default(false)
+  name            String
+  avatarUrl       String?
+  phone           String?
+  status          UserStatus @default(invited)
+  passwordHash    String?            // null when passkey-only
+  twoFactorEnabled Boolean   @default(false)
+  twoFactorSecret String?            // encrypted at rest
+  locale          String    @default("bg")
+  lastSeenAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deactivatedAt   DateTime?
+
+  roles           UserRole[]
+  permissionOverrides UserPermissionOverride[]
+  sessions        Session[]
+  accounts        Account[]
+  trustedDevices  TrustedDevice[]
+  recoveryCodes   RecoveryCode[]
+  loginAttempts   LoginAttempt[]
+  auditLogs       AuditLog[]          @relation("actor")
+  assignedLeads   Lead[]             @relation("assignee")
+  leadActivities  LeadActivity[]
+  notifications   Notification[]
+  mediaUploads    MediaAsset[]       @relation("uploader")
+  authoredRequests ChangeRequest[]   @relation("author")
+  reviewedRequests ChangeRequest[]   @relation("reviewer")
+  reminders       Reminder[]
+
+  @@index([status])
+}
+
+model Role {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  description  String?
+  isSystem     Boolean  @default(false)   // seeded default roles can't be deleted
+  businessUnit BusinessUnit?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  permissions  RolePermission[]
+  users        UserRole[]
+}
+
+model Permission {
+  id    String @id @default(uuid())
+  key   String @unique   // e.g. "vehicle.publish", "cms.update"
+  group String           // e.g. "vehicle" — for UI grouping
+  label String
+  roles RolePermission[]
+  overrides UserPermissionOverride[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  scope        String @default("all")   // all | own | unit:<bu>
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  @@id([roleId, permissionId])
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  @@id([userId, roleId])
+}
+
+model UserPermissionOverride {
+  userId       String
+  permissionId String
+  scope        String  @default("all")
+  effect       String              // ALLOW | DENY (DENY wins)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  @@id([userId, permissionId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  tokenHash    String   @unique
+  ipAddress    String?
+  userAgent    String?
+  deviceLabel  String?
+  geoCity      String?
+  geoCountry   String?
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  impersonatedBy String?            // set when an admin is impersonating
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Account {            // OAuth/passkey/credential providers (Better Auth)
+  id           String  @id @default(uuid())
+  userId       String
+  provider     String   // credential | passkey | google ...
+  providerId   String
+  credentialId String?  // WebAuthn
+  publicKey    String?
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerId])
+}
+
+model TrustedDevice {
+  id            String   @id @default(uuid())
+  userId        String
+  fingerprint   String
+  label         String?
+  ipAddress     String?
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model RecoveryCode {
+  id        String   @id @default(uuid())
+  userId    String
+  codeHash  String
+  usedAt    DateTime?
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LoginAttempt {
+  id          String   @id @default(uuid())
+  userId      String?
+  email       String
+  success     Boolean
+  ipAddress   String?
+  userAgent   String?
+  reason      String?    // bad_password | locked | 2fa_fail | ok
+  createdAt   DateTime @default(now())
+  user        User? @relation(fields: [userId], references: [id])
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Invite {
+  id         String   @id @default(uuid())
+  email      String
+  roleId     String
+  tokenHash  String   @unique
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VEHICLES  (extends types/index.ts Vehicle)
+// ─────────────────────────────────────────────────────────────────────────────
+model Vehicle {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  status        VehicleStatus @default(draft)
+  featured      Boolean  @default(false)
+
+  brand         String
+  model         String
+  variant       String?
+  year          Int
+  bodyType      String
+  collection    Collection
+  fuelType      FuelType
+  transmission  Transmission
+  drivetrain    Drivetrain
+
+  // pricing
+  price         Int       // EUR, minor unit handled in app
+  priceOnRequest Boolean  @default(false)
+  rentalPerDay  Int?      // present ⇒ rentable
+  vatDeductible Boolean   @default(false)
+  currency      String    @default("EUR")
+
+  // specs
+  mileage       Int
+  power         Int        // hp
+  torque        Int?
+  engineCC      Int?
+  acceleration  Float?
+  topSpeed      Int?
+  doors         Int?
+  seats         Int?
+  exteriorColor String
+  interiorColor String?
+  vin           String?   @unique
+  registration  String?
+  firstRegistration DateTime?
+  features      String[]
+  // flexible / future-proof specs without migrations:
+  specs         Json?
+
+  // localized free text
+  description   String
+  translations  Json?      // { en: { description, features[] } }
+
+  // internal
+  internalNotes VehicleNote[]
+  searchVector  Unsupported("tsvector")?   // GIN-indexed, generated in migration
+
+  // relations
+  media         VehicleMedia[]
+  documents     VehicleDocument[]
+  leads         Lead[]
+  views         VehicleView[]
+  businessUnit  BusinessUnit @default(cars)
+
+  createdById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  publishedAt   DateTime?
+  archivedAt    DateTime?
+  soldAt        DateTime?
+  reservedUntil DateTime?
+
+  @@index([status, featured])
+  @@index([brand, model])
+  @@index([price])
+  @@index([year])
+  @@index([collection])
+  @@index([createdAt, id])           // keyset pagination
+}
+
+model VehicleNote {
+  id        String   @id @default(uuid())
+  vehicleId String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  @@index([vehicleId])
+}
+
+model VehicleDocument {
+  id        String   @id @default(uuid())
+  vehicleId String
+  mediaId   String
+  kind      String    // registration | service_history | inspection | invoice | other
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  media     MediaAsset @relation(fields: [mediaId], references: [id])
+  @@index([vehicleId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDIA LIBRARY
+// ─────────────────────────────────────────────────────────────────────────────
+model MediaFolder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    MediaFolder?  @relation("folderTree", fields: [parentId], references: [id])
+  children  MediaFolder[] @relation("folderTree")
+  assets    MediaAsset[]
+  createdAt DateTime @default(now())
+}
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  kind         MediaKind @default(image)
+  status       MediaStatus @default(uploading)
+  folderId     String?
+  // storage
+  storageKey   String   @unique          // R2/Cloudinary key — stable, enables replace-in-place
+  publicId     String?  @unique          // Cloudinary public_id
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  durationSec  Float?                     // video
+  blurhash     String?
+  perceptualHash String?                  // dedupe
+  altText      String?
+  caption      String?
+  tags         String[]
+  variants     Json?                       // [{w, url, format}]
+  uploadedById String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  folder       MediaFolder?      @relation(fields: [folderId], references: [id])
+  uploadedBy   User?             @relation("uploader", fields: [uploadedById], references: [id])
+  vehicleLinks VehicleMedia[]
+  documents    VehicleDocument[]
+
+  @@index([kind, status])
+  @@index([folderId])
+}
+
+model VehicleMedia {       // join with ordering for drag-and-drop sorting
+  vehicleId String
+  mediaId   String
+  position  Int
+  isPrimary Boolean @default(false)
+  role      String  @default("gallery")  // gallery | hero | 360 | document
+  vehicle   Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  media     MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  @@id([vehicleId, mediaId])
+  @@index([vehicleId, position])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CMS  (every text/block on the public site, per locale, versioned)
+// ─────────────────────────────────────────────────────────────────────────────
+model CmsPage {
+  id           String   @id @default(uuid())
+  key          String                       // home | about | contact | faq | footer | nav ...
+  locale       String                       // bg | en
+  businessUnit BusinessUnit?
+  title        String?
+  status       CmsStatus @default(draft)
+  blocks       CmsBlock[]
+  seo          CmsSeo?
+  publishAt    DateTime?
+  updatedById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  versions     CmsVersion[]
+  @@unique([key, locale])
+}
+
+model CmsBlock {
+  id        String  @id @default(uuid())
+  pageId    String
+  key       String              // hero.title | hero.cta | section.1.body ...
+  type      String              // text | richtext | image | cta | list | json
+  value     Json                // typed by `type`
+  position  Int     @default(0)
+  page      CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@unique([pageId, key])
+  @@index([pageId, position])
+}
+
+model CmsSeo {
+  id            String  @id @default(uuid())
+  pageId        String  @unique
+  metaTitle     String?
+  metaDesc      String?
+  canonical     String?
+  ogTitle       String?
+  ogDesc        String?
+  ogImageId     String?
+  noindex       Boolean @default(false)
+  structuredData Json?              // JSON-LD
+  page          CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model CmsVersion {           // full snapshot for revert/audit
+  id        String   @id @default(uuid())
+  pageId    String
+  snapshot  Json
+  authorId  String?
+  note      String?
+  createdAt DateTime @default(now())
+  page      CmsPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  @@index([pageId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CRM · LEADS
+// ─────────────────────────────────────────────────────────────────────────────
+model Lead {
+  id          String   @id @default(uuid())
+  status      LeadStatus @default(new)
+  source      LeadSource @default(website_form)
+  businessUnit BusinessUnit @default(cars)
+
+  name        String
+  email       String?
+  phone       String?
+  message     String?
+  vehicleId   String?
+  assigneeId  String?
+  value       Int?       // expected deal value EUR
+  score       Int?       // lead scoring 0-100
+  consentGdpr Boolean  @default(false)
+  utm         Json?      // {source, medium, campaign}
+  ipAddress   String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastContactAt DateTime?
+  closedAt    DateTime?
+
+  vehicle     Vehicle?  @relation(fields: [vehicleId], references: [id])
+  assignee    User?     @relation("assignee", fields: [assigneeId], references: [id])
+  activities  LeadActivity[]
+  reminders   Reminder[]
+
+  @@index([status, assigneeId])
+  @@index([createdAt, id])
+  @@index([vehicleId])
+}
+
+model LeadActivity {
+  id        String   @id @default(uuid())
+  leadId    String
+  authorId  String?
+  type      String    // note | call | email | sms | status_change | assignment | meeting
+  body      String?
+  meta      Json?
+  createdAt DateTime @default(now())
+  lead      Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  author    User? @relation(fields: [authorId], references: [id])
+  @@index([leadId, createdAt])
+}
+
+model Reminder {
+  id        String   @id @default(uuid())
+  leadId    String?
+  userId    String
+  title     String
+  dueAt     DateTime
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  lead      Lead? @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user      User  @relation(fields: [userId], references: [id])
+  @@index([userId, dueAt, done])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANALYTICS  (first-party; PostHog handles deep product analytics)
+// ─────────────────────────────────────────────────────────────────────────────
+model VehicleView {
+  id        String   @id @default(uuid())
+  vehicleId String
+  sessionId String?
+  referer   String?
+  createdAt DateTime @default(now())
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  @@index([vehicleId, createdAt])
+}
+
+model SearchQuery {
+  id        String   @id @default(uuid())
+  term      String
+  filters   Json?
+  results   Int
+  sessionId String?
+  createdAt DateTime @default(now())
+  @@index([term])
+  @@index([createdAt])
+}
+
+model DailyMetric {            // pre-aggregated rollups (Inngest nightly)
+  date         DateTime @id @db.Date
+  visitors     Int      @default(0)
+  pageviews    Int      @default(0)
+  leads        Int      @default(0)
+  vehiclesSold Int      @default(0)
+  revenue      Int      @default(0)
+  conversion   Float    @default(0)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String     // lead.new | approval.pending | vehicle.sold | system ...
+  title     String
+  body      String?
+  link      String?
+  channels  NotifChannel[]
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, readAt, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APPROVALS (maker-checker)
+// ─────────────────────────────────────────────────────────────────────────────
+model ChangeRequest {
+  id          String   @id @default(uuid())
+  entityType  String     // vehicle | cms | ...
+  entityId    String?
+  action      String     // publish | update | delete
+  diff        Json       // proposed change
+  state       ApprovalState @default(pending)
+  authorId    String
+  reviewerId  String?
+  reviewNote  String?
+  createdAt   DateTime @default(now())
+  decidedAt   DateTime?
+  author      User  @relation("author", fields: [authorId], references: [id])
+  reviewer    User? @relation("reviewer", fields: [reviewerId], references: [id])
+  @@index([state, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS  (singleton-ish key/value, typed by group)
+// ─────────────────────────────────────────────────────────────────────────────
+model Setting {
+  id           String   @id @default(uuid())
+  group        String                // branding | contact | hours | tax | financing | social | integrations | locale
+  key          String
+  value        Json
+  businessUnit BusinessUnit?
+  updatedById  String?
+  updatedAt    DateTime @updatedAt
+  @@unique([group, key, businessUnit])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECURITY · AUDIT
+// ─────────────────────────────────────────────────────────────────────────────
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorId     String?
+  actorEmail  String?              // denormalized so log survives user deletion
+  action      String               // vehicle.update | user.role_change | login.success ...
+  entityType  String?
+  entityId    String?
+  before      Json?
+  after       Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  actor       User? @relation("actor", fields: [actorId], references: [id])
+  @@index([actorId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
+}

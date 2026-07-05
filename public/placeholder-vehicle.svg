@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="880" viewBox="0 0 1280 880" role="img" aria-label="Няма изображение">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b1f26"/>
+      <stop offset="1" stop-color="#0d0f13"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="880" fill="url(#bg)"/>
+  <g fill="none" stroke="#3a4049" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" transform="translate(390 360)">
+    <path d="M40 120 L95 40 H320 L390 120 H460 a30 30 0 0 1 30 30 v50 a20 20 0 0 1 -20 20 H30 a20 20 0 0 1 -20 -20 v-50 a30 30 0 0 1 30 -30 Z"/>
+    <circle cx="140" cy="220" r="46" fill="#0d0f13"/>
+    <circle cx="370" cy="220" r="46" fill="#0d0f13"/>
+  </g>
+  <text x="640" y="660" fill="#5a626c" font-family="system-ui, sans-serif" font-size="34" font-weight="600" text-anchor="middle">Няма изображение</text>
+</svg>
