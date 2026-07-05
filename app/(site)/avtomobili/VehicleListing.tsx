@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { VehicleCard } from "@/components/vehicle/VehicleCard";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { FilterSidebar } from "./FilterSidebar";
+import { FilterBar } from "./FilterBar";
 import { CollectionTabs } from "./CollectionTabs";
 
 type VehicleListingProps = {
@@ -143,23 +144,23 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
         onSelect={(c) => updateFilters({ collection: c })}
       />
 
-      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[260px_1fr] lg:gap-16">
-      {/* Desktop sidebar — height-bounded to the viewport with its own scroll,
-          so the full filter stack (many brands) is always reachable. */}
-      <aside className="hidden lg:block">
-        <div className="no-scrollbar sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain" data-lenis-prevent>
-          <FilterSidebar
-            filters={filters}
-            counts={counts}
-            brands={uniqueBrands}
-            bodyTypes={uniqueBodyTypes}
-            yearRange={yearRange}
-            priceRange={priceRange}
-            onChange={updateFilters}
-            onClear={clearAll}
-          />
-        </div>
-      </aside>
+      {/* Desktop: compact popover filter toolbar — panels stay bounded, the
+          layout never stretches, and the grid keeps the full page width. */}
+      <div className="mt-8 hidden lg:block">
+        <FilterBar
+          filters={filters}
+          counts={counts}
+          brands={uniqueBrands}
+          bodyTypes={uniqueBodyTypes}
+          yearRange={yearRange}
+          priceRange={priceRange}
+          activeCount={activeCount}
+          onChange={updateFilters}
+          onClear={clearAll}
+        />
+      </div>
+
+      <div className="mt-6 lg:mt-8">
 
       {/* Mobile filter drawer */}
       <AnimatePresence>
@@ -256,7 +257,7 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-10 grid grid-cols-1 gap-x-10 gap-y-14 sm:mt-12 md:grid-cols-2 md:gap-y-20 xl:grid-cols-3"
+            className="mt-10 grid grid-cols-1 gap-x-8 gap-y-14 sm:mt-12 md:grid-cols-2 md:gap-y-16 xl:grid-cols-3 2xl:grid-cols-4"
           >
             {results.map((v, i) => (
               <FadeIn key={v.id} delay={(i % 6) * 0.06} y={24}>

@@ -55,15 +55,15 @@ export function EngineRumble() {
 
     const filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.value = 90;
-    filter.Q.value = 0.8;
+    filter.frequency.value = 68;
+    filter.Q.value = 0.6;
 
-    // Sub oscillator — the mechanical fundamental under the noise.
+    // Sub oscillator — a pure sine fundamental: felt, never buzzy.
     const osc = ctx.createOscillator();
-    osc.type = "sawtooth";
-    osc.frequency.value = 52;
+    osc.type = "sine";
+    osc.frequency.value = 45;
     const oscGain = ctx.createGain();
-    oscGain.gain.value = 0.25;
+    oscGain.gain.value = 0.35;
 
     const master = ctx.createGain();
     master.gain.value = 0;
@@ -97,16 +97,61 @@ export function EngineRumble() {
         const overlap = Math.min(r.bottom, vh) - Math.max(r.top, 0);
         vis = Math.max(0, Math.min(overlap / vh, 1));
       }
-      const target = vis * (0.035 + vel.current * 0.075);
+      // Quieter, slower-breathing presence — felt under the film, never heard
+      // over it. Velocity adds a gentle swell instead of revs.
+      const target = vis * (0.018 + vel.current * 0.035);
       const t = a.ctx.currentTime;
-      a.master.gain.setTargetAtTime(target, t, 0.18);
-      a.filter.frequency.setTargetAtTime(80 + vis * 50 + vel.current * 60, t, 0.25);
-      a.osc.frequency.setTargetAtTime(48 + vel.current * 26, t, 0.3);
+      a.master.gain.setTargetAtTime(target, t, 0.3);
+      a.filter.frequency.setTargetAtTime(60 + vis * 26 + vel.current * 24, t, 0.4);
+      a.osc.frequency.setTargetAtTime(43 + vel.current * 10, t, 0.5);
     };
     tick();
 
+    // ── UI micro-sounds — tiny synthesized cues synchronized with the
+    // interactions themselves: a feather tick on hover, a soft mechanical
+    // thock on press. Throttled, barely-there gains, same opt-in gate.
+    let lastTick = 0;
+    const uiTick = () => {
+      const now = performance.now();
+      if (now - lastTick < 120) return;
+      lastTick = now;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 2300;
+      g.gain.setValueAtTime(0.012, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.06);
+    };
+    const uiPress = () => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(240, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.07);
+      g.gain.setValueAtTime(0.028, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.09);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.1);
+    };
+    const onOver = (e: PointerEvent) => {
+      if (e.target instanceof Element && e.target.closest("a, button, [role='button']")) uiTick();
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.target instanceof Element && e.target.closest("a, button, [role='button']")) uiPress();
+    };
+    document.addEventListener("pointerover", onOver, { passive: true });
+    document.addEventListener("pointerdown", onDown, { passive: true });
+
     return () => {
       cancelAnimationFrame(raf);
+      document.removeEventListener("pointerover", onOver);
+      document.removeEventListener("pointerdown", onDown);
       const a = audioRef.current;
       if (a) {
         a.master.gain.setTargetAtTime(0, a.ctx.currentTime, 0.05);

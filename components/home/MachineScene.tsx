@@ -7,6 +7,7 @@ import {
   useAnimationFrame,
   useMotionValue,
   useReducedMotion,
+  type MotionValue,
 } from "framer-motion";
 import { ButtonLink } from "@/components/ui/Button";
 import { Magnetic } from "@/components/fx/Magnetic";
@@ -48,7 +49,6 @@ export function MachineScene() {
   const progress = useMotionValue(0);
 
   // HUD choreography
-  const rpm = useTransform(progress, [0.05, 0.95], [0, 1]);
   const scanTop = useTransform(progress, [0.08, 0.96], ["18%", "82%"]);
   const scanOpacity = useTransform(progress, [0.06, 0.16, 0.88, 1], [0, 0.7, 0.7, 0]);
   const subOpacity = useTransform(progress, [0.46, 0.56], [0, 1]);
@@ -58,11 +58,6 @@ export function MachineScene() {
   const hudOpacity = useTransform(progress, [0.05, 0.15], [0, 1]);
   // The film itself breathes with the scroll — a slow push-in.
   const filmScale = useTransform(progress, [0, 1], [1.09, 1]);
-  // Live telemetry — the scene reads back your own momentum.
-  const speed = useTransform(progress, (p) =>
-    String(Math.round(Math.min(1, p * 1.15) * 280)).padStart(3, "0"),
-  );
-  const gear = useTransform(progress, (p) => String(Math.min(6, 1 + Math.floor(p * 5.99))));
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -215,9 +210,9 @@ export function MachineScene() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-base/70 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-base via-base/35 to-transparent" />
 
-        {/* ── Left telemetry rail — a quarter of the frame held dark while the
-            film runs behind it; the scene reads back your own momentum ── */}
-        <div className="absolute inset-y-0 left-0 z-10 hidden w-[25%] flex-col justify-between border-r border-line bg-gradient-to-r from-base via-base/85 to-transparent px-8 py-24 lg:flex xl:px-10">
+        {/* ── Left content rail — 40% of the frame held dark (the film runs in
+            the remaining 60%); the existing gradient melts the seam ── */}
+        <div className="absolute inset-y-0 left-0 z-10 hidden w-[40%] flex-col justify-between border-r border-line bg-gradient-to-r from-base via-base/90 to-transparent px-10 py-24 lg:flex xl:px-14">
           <motion.p style={{ opacity: hudOpacity }} className="label-fine flex items-center gap-3 text-fg/80">
             <span aria-hidden className="text-accent">[</span>
             03 · Машината
@@ -225,7 +220,7 @@ export function MachineScene() {
           </motion.p>
 
           <div>
-            <h2 className="font-display text-[clamp(2rem,2.9vw,3.2rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-fg">
+            <h2 className="font-display text-[clamp(2.2rem,3.2vw,3.8rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-fg">
               {TITLE.map(([word, [a, b]]) => (
                 <span key={word} className="block">
                   <TitleWord word={word} range={[a, b]} progress={progress} reduce={!!reduce} />
@@ -234,33 +229,18 @@ export function MachineScene() {
             </h2>
             <motion.p
               style={reduce ? undefined : { opacity: subOpacity, y: subY }}
-              className="mt-5 max-w-[24ch] text-sm leading-relaxed text-fg/70"
+              className="mt-5 max-w-[30ch] text-sm leading-relaxed text-fg/70 xl:text-base"
             >
               Силует, мощност и баланс в перфектна хармония — усещате я още преди
               да запалите двигателя.
             </motion.p>
           </div>
 
-          {/* telemetry block */}
+          {/* Shift-through-the-gears instrument — scrolling revs the tach;
+              hit the redline and the box shifts up. */}
           <motion.div style={{ opacity: hudOpacity }}>
-            <div className="flex items-end gap-6">
-              <div>
-                <motion.span className="font-display text-5xl font-extrabold leading-none tabular-nums text-fg xl:text-6xl">
-                  {speed}
-                </motion.span>
-                <span className="label-fine ml-2 text-fg-muted">км/ч</span>
-              </div>
-              <div className="pb-1">
-                <span className="label-fine text-fg-subtle">предавка</span>
-                <motion.span className="ml-2 font-display text-xl font-extrabold tabular-nums text-accent">
-                  {gear}
-                </motion.span>
-              </div>
-            </div>
-            <div className="mt-5 h-px w-full bg-white/12">
-              <motion.div style={{ scaleX: rpm }} className="h-full origin-left bg-accent" />
-            </div>
-            <div className="mt-7">
+            <MTach progress={progress} />
+            <div className="mt-8">
               <Magnetic strength={0.14}>
                 <ButtonLink href="/avtomobili" variant="solid" size="md" arrow>
                   Изберете вашата
@@ -275,7 +255,7 @@ export function MachineScene() {
           <motion.div
             aria-hidden
             style={{ top: scanTop, opacity: scanOpacity }}
-            className="absolute left-[8%] right-[8%] z-10 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent lg:left-[30%] lg:right-[6%]"
+            className="absolute left-[8%] right-[8%] z-10 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent lg:left-[45%] lg:right-[6%]"
           />
         )}
 
@@ -341,5 +321,111 @@ function TitleWord({
         {word}
       </motion.span>
     </span>
+  );
+}
+
+/* ── The M-Tach — shift through the gears with your scroll ──
+   The scroll is divided into six gear windows: within each, the needle sweeps
+   toward the redline and the shift LEDs walk titanium → amber → red; crest the
+   window and the box snaps up a gear while the revs drop back. Speed numbers
+   are for passengers — a rev counter with shift lights is the driver's story.
+   The tricolour stripes are the quiet nod enthusiasts will catch. */
+
+const REDLINE = 7200;
+const RPM_IDLE = 1400;
+const RPM_MAX = 8000;
+
+function gearT(p: number) {
+  const g = Math.min(5.999, Math.max(0, p * 6));
+  return { gear: Math.floor(g) + 1, t: g % 1 };
+}
+
+const rad = (deg: number) => (deg * Math.PI) / 180;
+/** Point on the dial: 0° = 12 o'clock, sweep −120°…+120°. */
+function dialPoint(r: number, deg: number): [number, number] {
+  return [100 + r * Math.sin(rad(deg)), 104 - r * Math.cos(rad(deg))];
+}
+const rpmDeg = (rpm: number) => -120 + (rpm / RPM_MAX) * 240;
+
+function MTach({ progress }: { progress: MotionValue<number> }) {
+  const rpm = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
+  const needle = useTransform(rpm, (v) => rpmDeg(v));
+  const gearNum = useTransform(progress, (p) => String(gearT(p).gear));
+  const rpmText = useTransform(rpm, (v) => (v / 1000).toFixed(1));
+
+  const [ax, ay] = dialPoint(80, -120);
+  const [bx, by] = dialPoint(80, 120);
+  const [rx1, ry1] = dialPoint(80, rpmDeg(7000));
+  const [rx2, ry2] = dialPoint(80, rpmDeg(RPM_MAX));
+
+  return (
+    <div className="flex items-end gap-7">
+      {/* dial */}
+      <div className="relative w-[170px] shrink-0 xl:w-[200px]">
+        <svg viewBox="0 0 200 118" fill="none" aria-hidden className="w-full text-accent">
+          {/* track + redline zone */}
+          <path d={`M ${ax} ${ay} A 80 80 0 1 1 ${bx} ${by}`} stroke="rgb(245 247 249 / 0.16)" strokeWidth={3} />
+          <path d={`M ${rx1} ${ry1} A 80 80 0 0 1 ${rx2} ${ry2}`} stroke="#e7222e" strokeWidth={4} strokeOpacity={0.85} />
+          {/* ticks + numerals, per 1000 rpm */}
+          {Array.from({ length: 9 }, (_, k) => {
+            const d = rpmDeg(k * 1000);
+            const [x1, y1] = dialPoint(80, d);
+            const [x2, y2] = dialPoint(70, d);
+            const [nx, ny] = dialPoint(58, d);
+            return (
+              <g key={k}>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={k >= 7 ? "#e7222e" : "currentColor"} strokeOpacity={k >= 7 ? 0.9 : 0.5} strokeWidth={1.5} />
+                <text x={nx} y={ny + 3} textAnchor="middle" className="fill-current" style={{ fontSize: 9, opacity: 0.65 }}>
+                  {k}
+                </text>
+              </g>
+            );
+          })}
+          {/* needle */}
+          <motion.g style={{ rotate: needle, transformOrigin: "100px 104px", transformBox: "view-box" }}>
+            <line x1={100} y1={104} x2={100} y2={30} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" />
+            <line x1={100} y1={104} x2={100} y2={116} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" strokeOpacity={0.5} />
+          </motion.g>
+          <circle cx={100} cy={104} r={5.5} fill="#14171c" stroke="currentColor" strokeOpacity={0.6} />
+        </svg>
+        <p className="pointer-events-none absolute inset-x-0 bottom-0 text-center">
+          <motion.span className="font-display text-sm font-bold tabular-nums text-fg">{rpmText}</motion.span>
+          <span className="label-fine ml-1.5 text-fg-subtle">×1000 об/мин</span>
+        </p>
+      </div>
+
+      {/* shift lights + gear box */}
+      <div className="min-w-0 pb-1">
+        <div className="mb-3.5 flex items-center gap-1.5">
+          {Array.from({ length: 8 }, (_, i) => (
+            <ShiftLed key={i} index={i} progress={progress} />
+          ))}
+        </div>
+        <div className="flex items-baseline gap-3">
+          <motion.span className="font-display text-6xl font-extrabold leading-none tabular-nums text-fg xl:text-7xl">
+            {gearNum}
+          </motion.span>
+          <span className="label-fine text-fg-muted">предавка</span>
+        </div>
+        {/* the tricolour — the enthusiast's handshake */}
+        <div aria-hidden className="mt-4 flex gap-1">
+          <span className="h-1 w-7 -skew-x-[24deg] rounded-[1px] bg-[#81c4ff]" />
+          <span className="h-1 w-7 -skew-x-[24deg] rounded-[1px] bg-[#16588e]" />
+          <span className="h-1 w-7 -skew-x-[24deg] rounded-[1px] bg-[#e7222e]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** One shift light — walks on as the window's revs climb; the last two warn. */
+function ShiftLed({ index, progress }: { index: number; progress: MotionValue<number> }) {
+  const color = index >= 6 ? "#e7222e" : index >= 4 ? "#f0b429" : "#c9cfd6";
+  const on = useTransform(progress, (p) => (gearT(p).t * 8 >= index + 0.5 ? 1 : 0.16));
+  return (
+    <motion.span
+      style={{ opacity: on, background: color, boxShadow: `0 0 8px ${color}66` }}
+      className="h-1.5 w-4 rounded-[2px]"
+    />
   );
 }
