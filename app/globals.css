@@ -779,34 +779,12 @@ html.has-cursor select {
     transform 0.18s ease;
 }
 .ah-cursor[data-mode="hidden"] .ah-cursor-mark { opacity: 0; }
-/* Over interactives the halo carries the affordance — the dot just quiets. */
+/* Over interactives the dot simply quiets — buttons carry their own states. */
 .ah-cursor[data-mode="link"] .ah-cursor-mark {
   width: 5px;
   height: 5px;
   opacity: 0.85;
 }
-
-/* ── Halo — the AI-OS affordance. Glides to the hovered control, wraps its
-   exact bounds + radius and settles as a hairline outline with a quiet glow.
-   Transitions carry the glide; per-frame re-tracking keeps it glued to
-   magnetic buttons. Visible on light and dark via the dual ring. */
-.ah-halo {
-  width: 0;
-  height: 0;
-  opacity: 0;
-  border: 1px solid rgb(245 247 249 / 0.85);
-  box-shadow:
-    0 0 0 1px rgb(8 9 12 / 0.22),
-    0 0 16px rgb(201 207 214 / 0.45),
-    inset 0 0 10px rgb(201 207 214 / 0.14);
-  transition:
-    transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-    height 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-    border-radius 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.16s ease;
-}
-.ah-halo[data-on] { opacity: 1; }
 /* Lens modes — a piece of optical glass held over the media: the backdrop is
    refracted (blur + saturation lift + brightness), a specular highlight rides
    the top edge and the lower rim falls into shadow. Material, not decoration. */

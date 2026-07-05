@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { IntroFilm } from "@/components/home/IntroFilm";
-import { HeroStage } from "@/components/home/HeroStage";
 import { ManifestoDrive } from "@/components/home/ManifestoDrive";
 import { CollectionGallery } from "@/components/home/CollectionGallery";
 import { MachineScene } from "@/components/home/MachineScene";
@@ -25,24 +24,22 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The homepage is one continuous film: a scroll-driven opening sequence, then
- * eight chapters, each sliding over the last as a sheet of film stock:
+ * The homepage is one continuous film: the scroll-driven opening sequence
+ * lands directly on the product, then the chapters follow as film sheets:
  *
- *   00 Филмът     — the scroll-scrubbed entry into the dealership, story
- *                   beats staged in the depth of the footage
- *   01 Начало     — the stage (showroom at golden hour)
- *   02 Колекция   — the featured machines, straight after the opening
- *   03 Философия  — the manifesto over the wind-tunnel streamlines
- *   04 Машината   — the scroll-scrubbed car film
- *   05 Издирване  — the hunt: diagonal cut, console, network marquee
- *   06 Стандартът — the engineering certificate with the live gauge
- *   07 Домът      — sticky-frame storytelling through the physical house
- *   08 Покана     — end credits and the conversion close
+ *   00 Филмът     — the scroll-scrubbed entry: brand, story beat, live proof
+ *                   counters and the welcome card, staged in the footage
+ *   01 Колекция   — the featured machines, immediately after the film
+ *   02 Философия  — the manifesto over the wind-tunnel streamlines
+ *   03 Машината   — the scroll-scrubbed car film with the telemetry rail
+ *   04 Издирване  — the hunt: diagonal cut, console, network marquee
+ *   05 Стандартът — the engineering certificate with the live gauge
+ *   06 Домът      — sticky-frame storytelling through the physical house
+ *   07 Покана     — end credits and the conversion close
  *
  * A fixed chapter rail (desktop) and a sticky CTA (mobile) frame the film.
  */
 export default async function HomePage() {
-  const cms = await getContent();
   const all = await getAllPublicVehicles();
   const featuredOnly = await getFeaturedVehicles();
   // Fall back to the newest inventory if nothing is explicitly featured yet.
@@ -52,15 +49,6 @@ export default async function HomePage() {
     <div className="bg-base">
       <ChapterRail />
       <IntroFilm />
-      <HeroStage
-        content={{
-          eyebrow: cms["home.hero.eyebrow"],
-          headline: cms["home.hero.headline"],
-          subcopy: cms["home.hero.subcopy"],
-          ctaPrimary: cms["home.hero.ctaPrimary"],
-          ctaSecondary: cms["home.hero.ctaSecondary"],
-        }}
-      />
       <CollectionGallery vehicles={featured} total={all.length} />
       <ManifestoDrive />
       <MachineScene />

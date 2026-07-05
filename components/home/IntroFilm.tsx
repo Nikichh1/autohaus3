@@ -37,23 +37,18 @@ const pad = (n: number) => String(n).padStart(3, "0");
 /** [enterStart, hold, releaseStart, gone] scroll windows per beat. */
 type Window4 = [number, number, number, number];
 
-const BEATS: { text: string; sub?: string; window: Window4; align: "center" | "left" | "right" }[] = [
-  {
-    text: "Някои коли се купуват.",
-    window: [0.3, 0.4, 0.5, 0.58],
-    align: "left",
-  },
-  {
-    text: "Други се заслужават.",
-    window: [0.56, 0.66, 0.76, 0.83],
-    align: "right",
-  },
-  {
-    text: "Добре дошли в AutoHaus.",
-    sub: "Пловдив · Премиум автомобили от 2004",
-    window: [0.82, 0.9, 0.96, 1],
-    align: "center",
-  },
+const BEAT_LINE: { text: string; window: Window4; align: "center" | "left" | "right" } = {
+  text: "Някои коли се купуват. Други се заслужават.",
+  window: [0.3, 0.42, 0.52, 0.6],
+  align: "left",
+};
+const W_PROOF: Window4 = [0.58, 0.68, 0.76, 0.83];
+const W_WELCOME: Window4 = [0.82, 0.9, 0.97, 1];
+
+const PROOF: [number, string, string][] = [
+  [20, "+", "години на пазара"],
+  [4800, "+", "доставени автомобила"],
+  [35, "", "представени марки"],
 ];
 
 export function IntroFilm() {
@@ -351,12 +346,12 @@ export function IntroFilm() {
           </motion.div>
         </div>
 
-        {/* ── Story beats — lines embedded in the space of the footage ── */}
+        {/* ── Story beats — elements embedded in the space of the footage ── */}
         <div onMouseMove={onPointer} className="absolute inset-0 z-10 [perspective:1100px]">
           <motion.div style={{ x: bx, y: by }} className="pointer-events-none absolute inset-0">
-            {BEATS.map((b) => (
-              <DepthBeat key={b.text} beat={b} progress={progress} />
-            ))}
+            <DepthBeat beat={BEAT_LINE} progress={progress} />
+            <ProofBeat progress={progress} />
+            <WelcomeBeat progress={progress} />
           </motion.div>
         </div>
 
@@ -398,6 +393,18 @@ export function IntroFilm() {
   );
 }
 
+/** Shared depth recipe — resolve out of blur, hold, accelerate past the lens. */
+function useBeat(window4: Window4, progress: MotionValue<number>) {
+  const [a, holdAt, r, gone] = window4;
+  const opacity = useTransform(progress, [a, holdAt, r, gone], [0, 1, 1, 0]);
+  const scale = useTransform(progress, [a, holdAt, r, gone], [0.9, 1, 1.05, 1.45]);
+  const y = useTransform(progress, [a, holdAt], [44, 0]);
+  const blur = useTransform(progress, [a, holdAt, r, gone], [10, 0, 0, 16]);
+  const filter = useTransform(blur, (b) => `blur(${b}px)`);
+  const line = useTransform(progress, [a + 0.02, holdAt + 0.03], [0, 1]);
+  return { opacity, scale, y, filter, line };
+}
+
 /**
  * One story beat, physically staged: it resolves out of depth (blur + scale +
  * rise), drifts forward with the camera while it holds, then accelerates past
@@ -408,16 +415,10 @@ function DepthBeat({
   beat,
   progress,
 }: {
-  beat: (typeof BEATS)[number];
+  beat: typeof BEAT_LINE;
   progress: MotionValue<number>;
 }) {
-  const [a, holdAt, r, gone] = beat.window;
-  const opacity = useTransform(progress, [a, holdAt, r, gone], [0, 1, 1, 0]);
-  const scale = useTransform(progress, [a, holdAt, r, gone], [0.9, 1, 1.05, 1.45]);
-  const y = useTransform(progress, [a, holdAt], [44, 0]);
-  const blur = useTransform(progress, [a, holdAt, r, gone], [10, 0, 0, 16]);
-  const filter = useTransform(blur, (b) => `blur(${b}px)`);
-  const line = useTransform(progress, [a + 0.02, holdAt + 0.03], [0, 1]);
+  const { opacity, scale, y, filter, line } = useBeat(beat.window, progress);
 
   const alignCls =
     beat.align === "left"
@@ -443,9 +444,104 @@ function DepthBeat({
           beat.align === "left" ? "origin-left" : beat.align === "right" ? "origin-right" : "origin-center"
         }`}
       />
-      {beat.sub && (
-        <p className="label-fine mt-5 text-white/70">{beat.sub}</p>
-      )}
+    </motion.div>
+  );
+}
+
+/**
+ * Beat 2 — the proof cluster: three counters that count up with your scroll,
+ * separated by machined hairlines inside a corner-ticked instrument frame.
+ * Живи числа вместо изречение — the film states its case in telemetry.
+ */
+function ProofBeat({ progress }: { progress: MotionValue<number> }) {
+  const { opacity, scale, y, filter, line } = useBeat(W_PROOF, progress);
+  return (
+    <motion.div
+      style={{ opacity, scale, y, filter }}
+      className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center will-change-[transform,filter,opacity]"
+    >
+      <p className="label-fine text-white/70">
+        <span aria-hidden className="mr-2 text-accent">[</span>
+        Доказано с годините
+        <span aria-hidden className="ml-2 text-accent">]</span>
+      </p>
+      <div className="relative mt-7 flex flex-col items-stretch gap-6 px-8 py-7 sm:flex-row sm:gap-0 sm:px-10 md:px-14">
+        {/* corner ticks */}
+        <span aria-hidden className="absolute left-0 top-0 size-6 border-l border-t border-white/45" />
+        <span aria-hidden className="absolute right-0 top-0 size-6 border-r border-t border-white/45" />
+        <span aria-hidden className="absolute bottom-0 left-0 size-6 border-b border-l border-white/45" />
+        <span aria-hidden className="absolute bottom-0 right-0 size-6 border-b border-r border-white/45" />
+        {PROOF.map(([to, suffix, label], i) => (
+          <div
+            key={label}
+            className={`flex flex-col items-center px-2 sm:px-8 md:px-12 ${
+              i > 0 ? "sm:border-l sm:border-white/20" : ""
+            }`}
+          >
+            <ScrollCounter to={to} suffix={suffix} window4={W_PROOF} progress={progress} />
+            <span className="label-fine mt-2.5 max-w-[11rem] text-white/65">{label}</span>
+          </div>
+        ))}
+      </div>
+      <motion.span
+        aria-hidden
+        style={{ scaleX: line }}
+        className="mt-7 h-px w-48 origin-center bg-gradient-to-r from-transparent via-white/60 to-transparent md:w-72"
+      />
+    </motion.div>
+  );
+}
+
+/** A number that counts up with the scrub itself — frame-accurate, no timers. */
+function ScrollCounter({
+  to,
+  suffix,
+  window4,
+  progress,
+}: {
+  to: number;
+  suffix: string;
+  window4: Window4;
+  progress: MotionValue<number>;
+}) {
+  const [a, holdAt] = window4;
+  const text = useTransform(progress, [a + 0.015, holdAt + 0.01], [0, to], { clamp: true });
+  const shown = useTransform(text, (v) => `${Math.round(v).toLocaleString("bg-BG")}${suffix}`);
+  return (
+    <motion.span className="font-display text-[clamp(2.4rem,5vw,4.2rem)] font-extrabold leading-none tracking-tight text-white tabular-nums [text-shadow:0_2px_24px_rgba(0,0,0,0.5)]">
+      {shown}
+    </motion.span>
+  );
+}
+
+/**
+ * Beat 3 — the welcome card: the film's title-card handoff into the
+ * collection. Eyebrow, brand line, light signature and a live scroll cue.
+ */
+function WelcomeBeat({ progress }: { progress: MotionValue<number> }) {
+  const { opacity, scale, y, filter, line } = useBeat(W_WELCOME, progress);
+  return (
+    <motion.div
+      style={{ opacity, scale, y, filter }}
+      className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center will-change-[transform,filter,opacity]"
+    >
+      <p className="label-fine text-white/70">
+        <span aria-hidden className="mr-2 text-accent">[</span>
+        Добре дошли
+        <span aria-hidden className="ml-2 text-accent">]</span>
+      </p>
+      <p className="mt-5 font-display text-[clamp(2rem,5.5vw,4.6rem)] font-extrabold leading-[1] tracking-[-0.03em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.5)]">
+        Колекцията ви очаква<span className="text-accent">.</span>
+      </p>
+      <motion.span
+        aria-hidden
+        style={{ scaleX: line }}
+        className="mt-7 h-px w-56 origin-center bg-gradient-to-r from-transparent via-white/70 to-transparent md:w-80"
+      />
+      <span className="label-fine mt-6 flex flex-col items-center gap-3 text-white/65">
+        Продължете надолу
+        <span className="vd-scrollcue block h-8 w-px bg-white/60" />
+      </span>
     </motion.div>
   );
 }

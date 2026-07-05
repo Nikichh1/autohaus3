@@ -60,7 +60,7 @@ export function ConciergeScene() {
 
   return (
     <section
-      data-chapter="05"
+      data-chapter="04"
       data-chapter-label="Издирване"
       className="sheet field-graphite relative -mt-[8vh] overflow-hidden text-fg"
     >
@@ -123,7 +123,7 @@ export function ConciergeScene() {
         {/* ── Left: the ask ── */}
         <div className="max-w-xl">
           <FadeIn>
-            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>05 · Издирване и внос<span aria-hidden className="ml-2 text-accent">]</span></p>
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>04 · Издирване и внос<span aria-hidden className="ml-2 text-accent">]</span></p>
           </FadeIn>
           <h2
             ref={headRef}

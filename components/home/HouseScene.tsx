@@ -68,7 +68,7 @@ export function HouseScene() {
 
   return (
     <section
-      data-chapter="07"
+      data-chapter="06"
       data-chapter-label="Домът"
       className="light relative bg-[#eef0f2] py-16 md:py-[13vh]"
     >
@@ -76,7 +76,7 @@ export function HouseScene() {
         {/* Intro */}
         <div className="max-w-2xl">
           <FadeIn>
-            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>07 · Изживяването<span aria-hidden className="ml-2 text-accent">]</span></p>
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>06 · Изживяването<span aria-hidden className="ml-2 text-accent">]</span></p>
           </FadeIn>
           <FadeIn delay={0.08}>
             <h2 className="mt-6 font-display text-display-sm font-bold leading-[0.98] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]">

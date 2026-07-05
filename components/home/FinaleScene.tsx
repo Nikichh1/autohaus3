@@ -56,7 +56,7 @@ export function FinaleScene() {
 
   return (
     <section
-      data-chapter="08"
+      data-chapter="07"
       data-chapter-label="Покана"
       className="sheet field-graphite relative -mt-[8vh] flex min-h-[100svh] flex-col justify-center overflow-hidden py-16 md:py-[14vh]"
     >

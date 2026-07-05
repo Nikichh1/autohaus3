@@ -49,7 +49,7 @@ export function ManifestoDrive() {
   return (
     <section
       ref={ref}
-      data-chapter="03"
+      data-chapter="02"
       data-chapter-label="Философия"
       className="sheet field-graphite relative -mt-[8vh] h-[150vh] md:h-[170vh]"
     >
@@ -79,7 +79,7 @@ export function ManifestoDrive() {
           aria-hidden
           className="pointer-events-none absolute right-[-2%] top-[6%] select-none font-display text-[20vw] font-extrabold leading-none tracking-tighter text-white/[0.025] lg:text-[14vw]"
         >
-          03
+          02
         </span>
 
         {/* ── Aerodynamic streamlines — airflow over an unseen machine ── */}
@@ -88,7 +88,7 @@ export function ManifestoDrive() {
         <div className="relative z-10 mx-auto w-full max-w-wide px-5 sm:px-8 md:px-12">
           <p className="label-fine mb-8 text-fg-subtle md:mb-10">
             <span aria-hidden className="mr-2 text-accent">[</span>
-            03 · Философията на AutoHaus
+            02 · Философията на AutoHaus
             <span aria-hidden className="ml-2 text-accent">]</span>
           </p>
           <p className="flex max-w-4xl flex-wrap font-display text-[1.6rem] font-extrabold leading-[1.2] tracking-tight sm:text-[2rem] md:text-[clamp(2.1rem,3.4vw,3.2rem)] md:leading-[1.12]">
@@ -133,11 +133,11 @@ function FocusGroup({
   reduce: boolean;
   maxBlur: number;
 }) {
-  const START = 0.16;
-  const SPAN = 0.68;
+  const START = 0.1;
+  const SPAN = 0.42;
   const a = START + (index / total) * SPAN;
   const b = START + ((index + span) / total) * SPAN;
-  const opacity = useTransform(progress, [a, b], [0.14, 1], { ease: REVEAL_EASE });
+  const opacity = useTransform(progress, [a, b], [0.3, 1], { ease: REVEAL_EASE });
   const y = useTransform(progress, [a, b], reduce ? [0, 0] : [16, 0], { ease: REVEAL_EASE });
   const scale = useTransform(progress, [a, b], reduce ? [1, 1] : [0.94, 1], { ease: REVEAL_EASE });
   const blurN = useTransform(progress, [a, b], [maxBlur, 0], { ease: REVEAL_EASE });

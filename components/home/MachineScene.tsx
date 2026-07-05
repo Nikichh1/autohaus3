@@ -192,7 +192,7 @@ export function MachineScene() {
   return (
     <section
       ref={sectionRef}
-      data-chapter="04"
+      data-chapter="03"
       data-chapter-label="Машината"
       data-rumble
       style={{ height: `${isMobile ? 200 : SCRUB_VH}vh` }}
@@ -220,7 +220,7 @@ export function MachineScene() {
         <div className="absolute inset-y-0 left-0 z-10 hidden w-[25%] flex-col justify-between border-r border-line bg-gradient-to-r from-base via-base/85 to-transparent px-8 py-24 lg:flex xl:px-10">
           <motion.p style={{ opacity: hudOpacity }} className="label-fine flex items-center gap-3 text-fg/80">
             <span aria-hidden className="text-accent">[</span>
-            04 · Машината
+            03 · Машината
             <span aria-hidden className="text-accent">]</span>
           </motion.p>
 

@@ -51,7 +51,7 @@ const proof: { to: number; suffix: string; label: string }[] = [
 export function StandardScene() {
   return (
     <section
-      data-chapter="06"
+      data-chapter="05"
       data-chapter-label="Стандартът"
       className="sheet light relative -mt-[8vh] overflow-hidden bg-[#edeef1] py-16 md:py-[14vh]"
     >
@@ -66,7 +66,7 @@ export function StandardScene() {
         aria-hidden
         className="pointer-events-none absolute right-[-2%] top-[4%] hidden select-none font-display text-[26vw] font-extrabold leading-none tracking-tighter text-fg/[0.028] lg:block"
       >
-        06
+        05
       </span>
 
       <div className="relative z-10 mx-auto max-w-wide px-5 sm:px-8 md:px-12">
@@ -74,7 +74,7 @@ export function StandardScene() {
           {/* Left — the argument + the instrument */}
           <div className="lg:col-span-5">
             <FadeIn>
-              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>06 · Стандартът<span aria-hidden className="ml-2 text-accent">]</span></p>
+              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>05 · Стандартът<span aria-hidden className="ml-2 text-accent">]</span></p>
             </FadeIn>
             <Reveal>
               <h2 className="mt-6 font-display text-display-sm font-extrabold leading-[0.96] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]">

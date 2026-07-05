@@ -25,7 +25,7 @@ export function MobileStickyCTA() {
       const y = window.scrollY;
       const remaining = document.documentElement.scrollHeight - (y + vh);
       // Past the opening film + hero stage, not yet at the finale/footer.
-      setShow(y > vh * 3.4 && remaining > vh * 1.8);
+      setShow(y > vh * 2.1 && remaining > vh * 1.8);
     };
     const onScroll = () => {
       if (!ticking) {

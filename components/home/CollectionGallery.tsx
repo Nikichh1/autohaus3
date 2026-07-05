@@ -35,16 +35,16 @@ export function CollectionGallery({ vehicles, total }: Props) {
 
   return (
     <section
-      data-chapter="02"
+      data-chapter="01"
       data-chapter-label="Колекция"
-      className="sheet light relative -mt-[38svh] bg-[#eef0f2] py-16 md:py-[13vh]"
+      className="sheet light relative -mt-[10vh] bg-[#eef0f2] py-16 md:py-[13vh]"
     >
       <div className="mx-auto max-w-wide px-5 sm:px-8 md:px-12">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-xl">
             <FadeIn>
-              <p className="label-fine text-fg-subtle">[ 02 · Подбрани от нас ]</p>
+              <p className="label-fine text-fg-subtle">[ 01 · Подбрани от нас ]</p>
             </FadeIn>
             <Reveal>
               <h2 className="mt-4 font-display text-[clamp(2.4rem,4.6vw,4.4rem)] font-extrabold leading-[0.94] tracking-[-0.035em] text-fg">
