@@ -31,8 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
  *   00 Филмът     — the scroll-scrubbed entry into the dealership, story
  *                   beats staged in the depth of the footage
  *   01 Начало     — the stage (showroom at golden hour)
- *   02 Философия  — the manifesto while a wireframe GT draws itself
- *   03 Колекция   — a horizontal drive through the featured machines
+ *   02 Колекция   — the featured machines, straight after the opening
+ *   03 Философия  — the manifesto over the wind-tunnel streamlines
  *   04 Машината   — the scroll-scrubbed car film
  *   05 Издирване  — the hunt: diagonal cut, console, network marquee
  *   06 Стандартът — the engineering certificate with the live gauge
@@ -61,8 +61,8 @@ export default async function HomePage() {
           ctaSecondary: cms["home.hero.ctaSecondary"],
         }}
       />
-      <ManifestoDrive />
       <CollectionGallery vehicles={featured} total={all.length} />
+      <ManifestoDrive />
       <MachineScene />
       <ConciergeScene />
       <StandardScene />

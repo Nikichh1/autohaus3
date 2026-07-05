@@ -9,8 +9,6 @@ import {
   cubicBezier,
   type MotionValue,
 } from "framer-motion";
-import { ChapterLabel } from "@/components/ui/ChapterLabel";
-
 const REVEAL_EASE = cubicBezier(0.45, 0, 0.55, 1);
 
 const WORDS =
@@ -51,9 +49,9 @@ export function ManifestoDrive() {
   return (
     <section
       ref={ref}
-      data-chapter="02"
+      data-chapter="03"
       data-chapter-label="Философия"
-      className="sheet field-graphite relative -mt-[62svh] h-[220vh] md:h-[250vh]"
+      className="sheet field-graphite relative -mt-[8vh] h-[150vh] md:h-[170vh]"
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
         {/* atmosphere */}
@@ -79,17 +77,21 @@ export function ManifestoDrive() {
         />
         <span
           aria-hidden
-          className="pointer-events-none absolute right-[-2%] top-[4%] select-none font-display text-[26vw] font-extrabold leading-none tracking-tighter text-white/[0.025] lg:text-[20vw]"
+          className="pointer-events-none absolute right-[-2%] top-[6%] select-none font-display text-[20vw] font-extrabold leading-none tracking-tighter text-white/[0.025] lg:text-[14vw]"
         >
-          02
+          03
         </span>
 
         {/* ── Aerodynamic streamlines — airflow over an unseen machine ── */}
         <Streamlines progress={p} reduce={!!reduce} />
 
         <div className="relative z-10 mx-auto w-full max-w-wide px-5 sm:px-8 md:px-12">
-          <ChapterLabel index="02" label="Философията на AutoHaus" className="mb-10 md:mb-12" />
-          <p className="flex max-w-5xl flex-wrap font-display text-[1.7rem] font-extrabold leading-[1.2] tracking-tight sm:text-display-xs md:text-[clamp(2.5rem,4.6vw,4.4rem)] md:leading-[1.08]">
+          <p className="label-fine mb-8 text-fg-subtle md:mb-10">
+            <span aria-hidden className="mr-2 text-accent">[</span>
+            03 · Философията на AutoHaus
+            <span aria-hidden className="ml-2 text-accent">]</span>
+          </p>
+          <p className="flex max-w-4xl flex-wrap font-display text-[1.6rem] font-extrabold leading-[1.2] tracking-tight sm:text-[2rem] md:text-[clamp(2.1rem,3.4vw,3.2rem)] md:leading-[1.12]">
             {chunks.map((c) => (
               <FocusGroup
                 key={c.start}

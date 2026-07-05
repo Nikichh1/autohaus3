@@ -261,7 +261,7 @@ export function MachineScene() {
               <motion.div style={{ scaleX: rpm }} className="h-full origin-left bg-accent" />
             </div>
             <div className="mt-7">
-              <Magnetic strength={0.2}>
+              <Magnetic strength={0.14}>
                 <ButtonLink href="/avtomobili" variant="solid" size="md" arrow>
                   Изберете вашата
                 </ButtonLink>
@@ -297,7 +297,7 @@ export function MachineScene() {
             style={reduce ? undefined : { opacity: ctaOpacity, y: ctaY }}
             className="pointer-events-auto mt-8"
           >
-            <Magnetic strength={0.2}>
+            <Magnetic strength={0.14}>
               <ButtonLink href="/avtomobili" variant="solid" size="lg" arrow>
                 Изберете вашата
               </ButtonLink>

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { ArrowRight, Phone, Globe2, Search, ShieldCheck } from "lucide-react";
 import { FadeIn } from "@/components/motion/FadeIn";
-import { ChapterLabel } from "@/components/ui/ChapterLabel";
 import { contactInfo } from "@/lib/nav";
 import { ease } from "@/lib/motion";
 
@@ -124,11 +123,11 @@ export function ConciergeScene() {
         {/* ── Left: the ask ── */}
         <div className="max-w-xl">
           <FadeIn>
-            <ChapterLabel index="05" label="Издирване и внос" />
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>05 · Издирване и внос<span aria-hidden className="ml-2 text-accent">]</span></p>
           </FadeIn>
           <h2
             ref={headRef}
-            className="mt-6 text-balance font-display text-display-sm font-extrabold leading-[0.98] tracking-tight text-fg md:text-[clamp(3.2rem,4.6vw,4.6rem)]"
+            className="mt-6 text-balance font-display text-display-sm font-extrabold leading-[0.98] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]"
           >
             {HEADLINE.map((line, i) => (
               <span key={line} className="block overflow-hidden pb-[0.08em]">

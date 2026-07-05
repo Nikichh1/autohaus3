@@ -7,7 +7,6 @@ import { ArrowUpRight, MapPin } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { ButtonLink } from "@/components/ui/Button";
-import { ChapterLabel } from "@/components/ui/ChapterLabel";
 import { contactInfo } from "@/lib/nav";
 
 const experiences = [
@@ -77,10 +76,10 @@ export function HouseScene() {
         {/* Intro */}
         <div className="max-w-2xl">
           <FadeIn>
-            <ChapterLabel index="07" label="Изживяването" />
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>07 · Изживяването<span aria-hidden className="ml-2 text-accent">]</span></p>
           </FadeIn>
           <FadeIn delay={0.08}>
-            <h2 className="mt-6 font-display text-display-sm font-bold leading-[0.98] tracking-tight text-fg md:text-[clamp(3.5rem,5.4vw,5rem)]">
+            <h2 className="mt-6 font-display text-display-sm font-bold leading-[0.98] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]">
               Повече от място
               <span className="block font-medium tracking-[-0.02em] text-fg-muted">за покупка.</span>
             </h2>

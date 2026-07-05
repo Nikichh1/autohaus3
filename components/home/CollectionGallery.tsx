@@ -35,19 +35,19 @@ export function CollectionGallery({ vehicles, total }: Props) {
 
   return (
     <section
-      data-chapter="03"
+      data-chapter="02"
       data-chapter-label="Колекция"
-      className="sheet light relative -mt-[10vh] bg-[#eef0f2] py-16 md:py-[13vh]"
+      className="sheet light relative -mt-[38svh] bg-[#eef0f2] py-16 md:py-[13vh]"
     >
       <div className="mx-auto max-w-wide px-5 sm:px-8 md:px-12">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-xl">
             <FadeIn>
-              <p className="label-fine text-fg-subtle">[ 03 · Подбрани от нас ]</p>
+              <p className="label-fine text-fg-subtle">[ 02 · Подбрани от нас ]</p>
             </FadeIn>
             <Reveal>
-              <h2 className="mt-4 font-display text-[clamp(2.6rem,6vw,5.5rem)] font-extrabold leading-[0.94] tracking-[-0.035em] text-fg">
+              <h2 className="mt-4 font-display text-[clamp(2.4rem,4.6vw,4.4rem)] font-extrabold leading-[0.94] tracking-[-0.035em] text-fg">
                 Колекция<span className="text-fg-muted">.</span>
               </h2>
             </Reveal>
@@ -135,7 +135,8 @@ function VehicleTile({ v, feature }: { v: Vehicle; feature?: boolean }) {
                 {v.model}
               </p>
             </div>
-            <span className="shrink-0 rounded-full bg-white/95 px-3.5 py-1.5 font-display text-sm font-bold text-ink shadow-lg">
+            {/* literal ink — `text-ink` flips light inside .light sections */}
+            <span className="shrink-0 rounded-full bg-white/95 px-3.5 py-1.5 font-display text-sm font-bold text-[#08090c] shadow-lg">
               {displayPrice(v.price)}
             </span>
           </div>
@@ -186,9 +187,9 @@ function CtaTile({ remaining, total }: { remaining: number; total: number }) {
         </p>
       </div>
       <div className="relative flex items-center gap-3">
-        <span className="inline-flex h-12 items-center gap-2.5 rounded-full bg-white pl-5 pr-2 font-display text-sm font-bold text-ink transition-transform duration-150 group-active:scale-[0.97]">
+        <span className="inline-flex h-12 items-center gap-2.5 rounded-full bg-white pl-5 pr-2 font-display text-sm font-bold text-[#08090c] transition-transform duration-150 group-active:scale-[0.97]">
           Разгледайте всички
-          <span className="flex size-8 items-center justify-center rounded-full bg-ink text-white">
+          <span className="flex size-8 items-center justify-center rounded-full bg-[#08090c] text-white">
             <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </span>
         </span>
@@ -201,7 +202,7 @@ function ViewAllLink({ total, className = "" }: { total: number; className?: str
   const { navigate } = usePageTransition();
   const router = useRouter();
   return (
-    <Magnetic strength={0.2}>
+    <Magnetic strength={0.14}>
       <button
         type="button"
         onClick={() => navigate("/avtomobili")}

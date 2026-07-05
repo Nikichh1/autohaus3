@@ -137,7 +137,7 @@ export function FinaleScene() {
 
           <FadeIn delay={0.34}>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <Magnetic strength={0.22}>
+              <Magnetic strength={0.14}>
                 <ButtonLink href="/avtomobili" variant="solid" size="lg" arrow>
                   Разгледай колекцията
                 </ButtonLink>

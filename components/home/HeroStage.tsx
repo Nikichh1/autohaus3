@@ -107,7 +107,7 @@ export function HeroStage({ content }: { content?: Partial<HeroContent> }) {
       data-chapter="01"
       data-chapter-label="Начало"
       onMouseMove={onMouse}
-      className="relative h-[172svh] bg-base"
+      className="relative h-[140svh] bg-base"
       aria-label="Начало"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
@@ -183,7 +183,7 @@ export function HeroStage({ content }: { content?: Partial<HeroContent> }) {
               </motion.p>
 
               <motion.div {...rise(0.46)} className="mt-7 flex flex-wrap items-center gap-4">
-                <Magnetic strength={0.22}>
+                <Magnetic strength={0.14}>
                   <ButtonLink href="/avtomobili" variant="solid" size="lg" arrow>
                     {c.ctaPrimary}
                   </ButtonLink>

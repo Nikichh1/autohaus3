@@ -7,7 +7,6 @@ import { Reveal } from "@/components/motion/Reveal";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { StatCounter } from "@/components/motion/StatCounter";
 import { ButtonLink } from "@/components/ui/Button";
-import { ChapterLabel } from "@/components/ui/ChapterLabel";
 import { ease } from "@/lib/motion";
 
 const standards = [
@@ -75,10 +74,10 @@ export function StandardScene() {
           {/* Left — the argument + the instrument */}
           <div className="lg:col-span-5">
             <FadeIn>
-              <ChapterLabel index="06" label="Стандартът" />
+              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>06 · Стандартът<span aria-hidden className="ml-2 text-accent">]</span></p>
             </FadeIn>
             <Reveal>
-              <h2 className="mt-6 font-display text-display-sm font-extrabold leading-[0.96] tracking-tight text-fg md:text-[clamp(3.5rem,5.4vw,5rem)]">
+              <h2 className="mt-6 font-display text-display-sm font-extrabold leading-[0.96] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]">
                 Един стандарт.
                 <span className="block font-medium tracking-[-0.02em] text-fg-muted">без компромис.</span>
               </h2>
