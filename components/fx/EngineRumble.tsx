@@ -96,6 +96,16 @@ export function EngineRumble() {
         const vh = window.innerHeight;
         const overlap = Math.min(r.bottom, vh) - Math.max(r.top, 0);
         vis = Math.max(0, Math.min(overlap / vh, 1));
+        // Mirror the M-Tach's gear math; blip exactly when the box shifts.
+        const dist = r.height - vh;
+        const p = dist > 0 ? Math.min(Math.max(-r.top / dist, 0), 1) : 0;
+        const gear = 1 + Math.floor(Math.min(5.999, p * 6));
+        if (vis > 0.5) {
+          if (lastGear !== 0 && gear !== lastGear) shiftBlip();
+          lastGear = gear;
+        } else {
+          lastGear = 0;
+        }
       }
       // Quieter, slower-breathing presence — felt under the film, never heard
       // over it. Velocity adds a gentle swell instead of revs.
@@ -107,51 +117,36 @@ export function EngineRumble() {
     };
     tick();
 
-    // ── UI micro-sounds — tiny synthesized cues synchronized with the
-    // interactions themselves: a feather tick on hover, a soft mechanical
-    // thock on press. Throttled, barely-there gains, same opt-in gate.
-    let lastTick = 0;
-    const uiTick = () => {
-      const now = performance.now();
-      if (now - lastTick < 120) return;
-      lastTick = now;
-      const o = ctx.createOscillator();
+    // ── The one designed sound event: the gear shift. Synchronized with the
+    // M-Tach's visual shift — a breath of exhaust (band-passed air from the
+    // same noise buffer) over a momentary throttle-lift dip in the sub.
+    // Nothing plays on ordinary UI; sound exists only where the car does.
+    let lastGear = 0;
+    const shiftBlip = () => {
+      const t = ctx.currentTime;
+      const n = ctx.createBufferSource();
+      n.buffer = buffer;
+      n.loop = true;
+      n.playbackRate.value = 0.85;
+      const f = ctx.createBiquadFilter();
+      f.type = "bandpass";
+      f.frequency.value = 300;
+      f.Q.value = 1.1;
       const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.value = 2300;
-      g.gain.setValueAtTime(0.012, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
-      o.connect(g);
+      g.gain.setValueAtTime(0.05, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      n.connect(f);
+      f.connect(g);
       g.connect(ctx.destination);
-      o.start();
-      o.stop(ctx.currentTime + 0.06);
+      n.start(t);
+      n.stop(t + 0.2);
+      // throttle lift — the sub dips and settles back
+      osc.frequency.setTargetAtTime(36, t, 0.03);
+      osc.frequency.setTargetAtTime(45, t + 0.1, 0.15);
     };
-    const uiPress = () => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "triangle";
-      o.frequency.setValueAtTime(240, ctx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.07);
-      g.gain.setValueAtTime(0.028, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.09);
-      o.connect(g);
-      g.connect(ctx.destination);
-      o.start();
-      o.stop(ctx.currentTime + 0.1);
-    };
-    const onOver = (e: PointerEvent) => {
-      if (e.target instanceof Element && e.target.closest("a, button, [role='button']")) uiTick();
-    };
-    const onDown = (e: PointerEvent) => {
-      if (e.target instanceof Element && e.target.closest("a, button, [role='button']")) uiPress();
-    };
-    document.addEventListener("pointerover", onOver, { passive: true });
-    document.addEventListener("pointerdown", onDown, { passive: true });
 
     return () => {
       cancelAnimationFrame(raf);
-      document.removeEventListener("pointerover", onOver);
-      document.removeEventListener("pointerdown", onDown);
       const a = audioRef.current;
       if (a) {
         a.master.gain.setTargetAtTime(0, a.ctx.currentTime, 0.05);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { motion, animate, useMotionValue, useInView, useReducedMotion } from "framer-motion";
 import { ShieldCheck, Gauge, FileCheck, Wrench } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { FadeIn } from "@/components/motion/FadeIn";
@@ -196,15 +196,9 @@ function DiagnosticGauge() {
         {ticks.map(([x1, y1, x2, y2], i) => (
           <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeOpacity={0.3} strokeWidth={1.5} />
         ))}
-        {/* needle */}
-        <motion.g
-          style={{ transformBox: "view-box", transformOrigin: "140px 150px" }}
-          initial={reduce ? { rotate: 79 } : { rotate: -90 }}
-          animate={on ? { rotate: 79 } : {}}
-          transition={{ duration: 1.8, ease: ease.entrance, delay: 0.2 }}
-        >
-          <line x1={140} y1={150} x2={140} y2={62} stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
-        </motion.g>
+        {/* needle — rotated via the SVG attribute about the exact hub point
+            (CSS transform-origin on SVG groups is unreliable) */}
+        <GaugeNeedle on={on} reduce={!!reduce} />
         <circle cx={140} cy={150} r={5} fill="currentColor" />
       </svg>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center">
@@ -234,5 +228,35 @@ function InspectionSeal() {
         </text>
       </svg>
     </div>
+  );
+}
+
+/** Gauge needle — SVG-attribute rotation about the hub (140,150); sweeps in
+ *  with a physical ease when the certificate enters view. */
+function GaugeNeedle({ on, reduce }: { on: boolean; reduce: boolean }) {
+  const ref = useRef<SVGGElement>(null);
+  const angle = useMotionValue(reduce ? 79 : -90);
+  useEffect(() => {
+    const apply = (v: number) =>
+      ref.current?.setAttribute("transform", `rotate(${v} 140 150)`);
+    apply(angle.get());
+    const unsub = angle.on("change", apply);
+    if (reduce) {
+      angle.set(79);
+      return unsub;
+    }
+    if (on) {
+      const ctrl = animate(angle, 79, { duration: 1.8, ease: ease.entrance, delay: 0.2 });
+      return () => {
+        unsub();
+        ctrl.stop();
+      };
+    }
+    return unsub;
+  }, [on, reduce, angle]);
+  return (
+    <g ref={ref}>
+      <line x1={140} y1={150} x2={140} y2={62} stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
+    </g>
   );
 }

@@ -3,9 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   motion,
+  animate,
   useTransform,
   useAnimationFrame,
   useMotionValue,
+  useSpring,
+  useInView,
   useReducedMotion,
   type MotionValue,
 } from "framer-motion";
@@ -261,6 +264,7 @@ export function MachineScene() {
 
         {/* ── Mobile composition: the title lands across the frame ── */}
         <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-5 pb-[13vh] text-center lg:hidden">
+          <MiniCluster progress={progress} />
           <h2 className="flex flex-wrap justify-center gap-x-[0.26em] font-display text-[clamp(1.9rem,7.5vw,3.4rem)] font-extrabold leading-[1] tracking-[-0.03em] text-fg">
             {TITLE.map(([word, [a, b]]) => (
               <TitleWord key={word} word={word} range={[a, b]} progress={progress} reduce={!!reduce} />
@@ -348,7 +352,32 @@ function dialPoint(r: number, deg: number): [number, number] {
 const rpmDeg = (rpm: number) => -120 + (rpm / RPM_MAX) * 240;
 
 function MTach({ progress }: { progress: MotionValue<number> }) {
-  const rpm = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
+  const rpmRaw = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
+  // Needle physics — mass, stiffness and damping like a real stepper gauge:
+  // sweeps track the scroll smoothly and the gear-shift drop becomes a fast
+  // physical fall with a hint of settle, never a teleport.
+  const rpmSpring = useSpring(rpmRaw, { stiffness: 160, damping: 19, mass: 0.55 });
+
+  // Ignition sweep — the needle's full sweep-and-return when the cluster first
+  // wakes, exactly like an M car on startup. The detail enthusiasts wait for.
+  const dialRef = useRef<HTMLDivElement>(null);
+  const ignited = useInView(dialRef, { once: true, amount: 0.6 });
+  const sweepMV = useMotionValue(0);
+  useEffect(() => {
+    if (!ignited) return;
+    let cancelled = false;
+    (async () => {
+      await animate(sweepMV, RPM_MAX, { duration: 0.65, ease: [0.3, 0, 0.15, 1] });
+      if (!cancelled) await animate(sweepMV, 0, { duration: 1.0, ease: [0.16, 1, 0.3, 1] });
+    })();
+    return () => {
+      cancelled = true;
+      sweepMV.stop();
+    };
+  }, [ignited, sweepMV]);
+
+  // The gauge shows whichever is higher: the sprung scroll-revs or the sweep.
+  const rpm = useTransform([rpmSpring, sweepMV], ([a, b]: number[]) => Math.max(a, b));
   const needle = useTransform(rpm, (v) => rpmDeg(v));
   const gearNum = useTransform(progress, (p) => String(gearT(p).gear));
   const rpmText = useTransform(rpm, (v) => (v / 1000).toFixed(1));
@@ -361,7 +390,7 @@ function MTach({ progress }: { progress: MotionValue<number> }) {
   return (
     <div className="flex items-end gap-7">
       {/* dial */}
-      <div className="relative w-[170px] shrink-0 xl:w-[200px]">
+      <div ref={dialRef} className="relative w-[170px] shrink-0 xl:w-[200px]">
         <svg viewBox="0 0 200 118" fill="none" aria-hidden className="w-full text-accent">
           {/* track + redline zone */}
           <path d={`M ${ax} ${ay} A 80 80 0 1 1 ${bx} ${by}`} stroke="rgb(245 247 249 / 0.16)" strokeWidth={3} />
@@ -381,11 +410,9 @@ function MTach({ progress }: { progress: MotionValue<number> }) {
               </g>
             );
           })}
-          {/* needle */}
-          <motion.g style={{ rotate: needle, transformOrigin: "100px 104px", transformBox: "view-box" }}>
-            <line x1={100} y1={104} x2={100} y2={30} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" />
-            <line x1={100} y1={104} x2={100} y2={116} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" strokeOpacity={0.5} />
-          </motion.g>
+          {/* needle — native SVG rotation about the exact hub point (CSS
+              transform-origin on SVG groups is unreliable across engines) */}
+          <Needle angle={needle} />
           <circle cx={100} cy={104} r={5.5} fill="#14171c" stroke="currentColor" strokeOpacity={0.6} />
         </svg>
         <p className="pointer-events-none absolute inset-x-0 bottom-0 text-center">
@@ -398,7 +425,7 @@ function MTach({ progress }: { progress: MotionValue<number> }) {
       <div className="min-w-0 pb-1">
         <div className="mb-3.5 flex items-center gap-1.5">
           {Array.from({ length: 8 }, (_, i) => (
-            <ShiftLed key={i} index={i} progress={progress} />
+            <ShiftLed key={i} index={i} rpm={rpm} />
           ))}
         </div>
         <div className="flex items-baseline gap-3">
@@ -418,14 +445,67 @@ function MTach({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
-/** One shift light — walks on as the window's revs climb; the last two warn. */
-function ShiftLed({ index, progress }: { index: number; progress: MotionValue<number> }) {
+/** One shift light — follows the *sprung* revs (so it walks with the needle,
+ *  including the ignition sweep); everything lights at the redline flash. */
+function ShiftLed({ index, rpm }: { index: number; rpm: MotionValue<number> }) {
   const color = index >= 6 ? "#e7222e" : index >= 4 ? "#f0b429" : "#c9cfd6";
-  const on = useTransform(progress, (p) => (gearT(p).t * 8 >= index + 0.5 ? 1 : 0.16));
+  const on = useTransform(rpm, (v) => {
+    if (v >= 7050) return 1; // redline — full strip
+    const t = (v - RPM_IDLE) / (REDLINE - RPM_IDLE);
+    return t * 8 >= index + 0.5 ? 1 : 0.16;
+  });
   return (
     <motion.span
       style={{ opacity: on, background: color, boxShadow: `0 0 8px ${color}66` }}
       className="h-1.5 w-4 rounded-[2px]"
     />
+  );
+}
+
+/** Needle group rotated via the SVG transform attribute — pivot locked to the
+ *  hub (100,104), immune to CSS transform-origin quirks on SVG. */
+function Needle({ angle }: { angle: MotionValue<number> }) {
+  const ref = useRef<SVGGElement>(null);
+  useEffect(() => {
+    const apply = (v: number) =>
+      ref.current?.setAttribute("transform", `rotate(${v} 100 104)`);
+    apply(angle.get());
+    return angle.on("change", apply);
+  }, [angle]);
+  return (
+    <g ref={ref}>
+      <line x1={100} y1={104} x2={100} y2={30} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" />
+      <line x1={100} y1={104} x2={100} y2={116} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" strokeOpacity={0.5} />
+    </g>
+  );
+}
+
+/** Compact shift cluster for phones — the same living gearbox (LEDs, gear,
+ *  sprung revs) so mobile keeps the scene's signature, in one slim row. */
+function MiniCluster({ progress }: { progress: MotionValue<number> }) {
+  const rpmRaw = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
+  const rpm = useSpring(rpmRaw, { stiffness: 160, damping: 19, mass: 0.55 });
+  const gearNum = useTransform(progress, (p) => String(gearT(p).gear));
+  const rpmText = useTransform(rpm, (v) => (v / 1000).toFixed(1));
+  return (
+    <div className="mb-5 flex items-center gap-4 rounded-full border border-line bg-base/40 px-4 py-2.5 backdrop-blur-md">
+      <span className="flex items-center gap-1">
+        {Array.from({ length: 8 }, (_, i) => (
+          <ShiftLed key={i} index={i} rpm={rpm} />
+        ))}
+      </span>
+      <span className="flex items-baseline gap-1.5">
+        <motion.span className="font-display text-xl font-extrabold leading-none tabular-nums text-fg">
+          {gearNum}
+        </motion.span>
+        <span className="label-fine text-fg-muted">пр.</span>
+      </span>
+      <span className="flex items-baseline gap-1">
+        <motion.span className="font-display text-sm font-bold tabular-nums text-fg/80">
+          {rpmText}
+        </motion.span>
+        <span className="label-fine text-fg-subtle">×1000</span>
+      </span>
+    </div>
   );
 }

@@ -87,14 +87,29 @@ export function ConciergeScene() {
             }}
           />
         </div>
-        {/* the seam itself — a titanium edge light */}
+        {/* the seam itself — a titanium edge light with a pulse travelling
+            the cut every few seconds, like a weld bead being drawn */}
         <div
-          className="absolute inset-y-0 left-[11%] w-px -skew-x-[9deg]"
+          className="absolute inset-y-0 left-[11%] w-px -skew-x-[9deg] overflow-hidden"
           style={{
             background:
               "linear-gradient(180deg, transparent, rgba(201,207,214,0.5) 30%, rgba(201,207,214,0.5) 70%, transparent)",
           }}
-        />
+        >
+          {!reduce && (
+            <motion.span
+              aria-hidden
+              className="absolute left-0 h-32 w-px"
+              style={{
+                background:
+                  "linear-gradient(180deg, transparent, rgba(255,255,255,0.95), transparent)",
+                boxShadow: "0 0 12px rgba(201,207,214,0.8)",
+              }}
+              animate={{ top: ["-20%", "115%"] }}
+              transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 2.6 }}
+            />
+          )}
+        </div>
         {/* caption riding the image */}
         <div className="absolute bottom-8 right-8 text-right">
           <p className="label-fine text-accent">Издирен за клиент</p>

@@ -147,9 +147,14 @@ export function HouseScene() {
                     initial={false}
                     animate={{
                       opacity: i === active ? 1 : 0,
-                      scale: reduce ? 1 : i === active ? 1 : 1.06,
+                      scale: reduce ? 1 : i === active ? 1 : 1.07,
                     }}
-                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                    // Fast crossfade, then the shot keeps settling for six
+                    // seconds — a filmed drift, not a static slide.
+                    transition={{
+                      opacity: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                      scale: { duration: 6, ease: [0.16, 1, 0.3, 1] },
+                    }}
                   >
                     <Image
                       src={e.img}

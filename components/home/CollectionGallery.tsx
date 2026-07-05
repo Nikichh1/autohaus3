@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion, animate, useMotionValue, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Gauge, Calendar, Fuel } from "lucide-react";
 import type { Vehicle } from "@/types";
 import { displayPrice, formatNumber } from "@/lib/utils";
@@ -92,10 +94,15 @@ export function CollectionGallery({ vehicles, total }: Props) {
 }
 
 function VehicleTile({ v, feature }: { v: Vehicle; feature?: boolean }) {
+  // The dyno pull — hover a machine and its power figure runs up from zero
+  // like a dyno readout settling. The number enthusiasts read first, alive.
+  const [dyno, setDyno] = useState(false);
   return (
     <Link
       href={`/avtomobili/${v.slug}`}
       data-cursor="view"
+      onMouseEnter={() => setDyno(true)}
+      onMouseLeave={() => setDyno(false)}
       className="group relative block h-full"
     >
       <div className="sheen edge-light relative aspect-[16/11] w-full overflow-hidden rounded-xl bg-elevated shadow-luxe transition-shadow duration-500 group-hover:shadow-[0_40px_90px_-40px_rgba(10,12,16,0.55)] lg:aspect-auto lg:h-full">
@@ -143,7 +150,10 @@ function VehicleTile({ v, feature }: { v: Vehicle; feature?: boolean }) {
 
           {/* spec row — always readable, brightens + lifts on hover */}
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-white/15 pt-3 text-white/75 transition-all duration-500 group-hover:text-white">
-            <SpecChip Icon={Gauge} label={`${v.power} к.с.`} />
+            <span className="flex items-center gap-1.5 text-xs font-medium tabular-nums">
+              <Gauge className="size-3.5 opacity-70" strokeWidth={1.8} aria-hidden />
+              <DynoPower hp={v.power} active={dyno} />
+            </span>
             <SpecChip Icon={Calendar} label={`${formatNumber(v.mileage)} км`} />
             <SpecChip Icon={Fuel} label={fuelLabels[v.fuelType]} />
           </div>
@@ -160,6 +170,24 @@ function SpecChip({ Icon, label }: { Icon: typeof Gauge; label: string }) {
       {label}
     </span>
   );
+}
+
+/** The power figure runs 0 → hp on hover, fast rise with a soft settle —
+ *  a dyno readout, not a tooltip. Motion-value driven: no re-renders. */
+function DynoPower({ hp, active }: { hp: number; active: boolean }) {
+  const reduce = useReducedMotion();
+  const mv = useMotionValue(hp);
+  const text = useTransform(mv, (v) => `${Math.round(v)} к.с.`);
+  useEffect(() => {
+    if (!active || reduce) return;
+    mv.set(0);
+    const ctrl = animate(mv, hp, { duration: 0.8, ease: [0.16, 0.9, 0.25, 1] });
+    return () => {
+      ctrl.stop();
+      mv.set(hp);
+    };
+  }, [active, hp, mv, reduce]);
+  return <motion.span>{text}</motion.span>;
 }
 
 function CtaTile({ remaining, total }: { remaining: number; total: number }) {
