@@ -51,7 +51,10 @@ export function TiltCard({ children, className, max = 5 }: TiltCardProps) {
         py.set(0.5);
       }}
       style={{ rotateX, rotateY, transformPerspective: 1100 }}
-      className={cn("[transform-style:preserve-3d]", className)}
+      // `tilt-3d` lets touch devices flatten the 3D context entirely (CSS in
+      // globals.css) — tilt can't fire without a pointer, and the perspective/
+      // preserve-3d pipeline glitches text paint in mobile WebKit.
+      className={cn("tilt-3d [transform-style:preserve-3d]", className)}
     >
       {children}
     </motion.div>

@@ -117,16 +117,24 @@ export function ConciergeScene() {
         </div>
       </div>
 
-      {/* mobile image band */}
-      <div className="relative aspect-[16/10] w-full lg:hidden">
-        <Image
-          src="/photos/porsche-gt3rs.webp"
-          alt="Porsche 911 GT3 RS — издирен за клиент"
-          fill
-          quality={90}
-          sizes="100vw"
-          className="object-cover"
-        />
+      {/* mobile image band — settles like a filmed shot as it enters */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden lg:hidden">
+        <motion.div
+          initial={reduce ? false : { scale: 1.12 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 7, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
+        >
+          <Image
+            src="/photos/porsche-gt3rs.webp"
+            alt="Porsche 911 GT3 RS — издирен за клиент"
+            fill
+            quality={90}
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#0e1116] via-transparent to-[#0e1116]/40" />
         <div className="absolute bottom-4 left-5">
           <p className="label-fine text-accent">Издирен за клиент</p>
@@ -271,6 +279,8 @@ function ConciergeRequest() {
         onChange={(e) => setValue(e.target.value)}
         placeholder="напр. Porsche 911 GT3 RS, BMW M5 Touring…"
         aria-label="Опишете автомобила, който търсите"
+        enterKeyHint="go"
+        autoComplete="off"
         className="h-14 w-full rounded-full border border-line-strong bg-white/5 px-5 text-sm text-fg placeholder:text-fg-subtle focus:border-accent/60 focus:outline-none sm:flex-1"
       />
       <button

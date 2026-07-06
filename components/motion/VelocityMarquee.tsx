@@ -9,6 +9,7 @@ import {
   useTransform,
   useMotionValue,
   useAnimationFrame,
+  useInView,
   useReducedMotion,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,10 @@ export function VelocityMarquee({
   separator?: string;
 }) {
   const reduce = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Tick only while the track is on screen — an infinite rAF animation must
+  // never burn frames under the rest of the page (identical when visible).
+  const onScreen = useInView(rootRef, { margin: "15% 0px 15% 0px" });
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
@@ -46,7 +51,7 @@ export function VelocityMarquee({
   const dir = useRef(1);
 
   useAnimationFrame((_, delta) => {
-    if (reduce) return;
+    if (reduce || !onScreen) return;
     let moveBy = dir.current * baseVelocity * (delta / 1000);
     const vf = velocityFactor.get();
     if (vf < 0) dir.current = -1;
@@ -71,7 +76,7 @@ export function VelocityMarquee({
   }
 
   return (
-    <div className={cn("overflow-hidden", className)} aria-hidden>
+    <div ref={rootRef} className={cn("overflow-hidden", className)} aria-hidden>
       <motion.div className="inline-flex flex-nowrap whitespace-nowrap will-change-transform" style={{ x }}>
         {Array.from({ length: 6 }).map((_, i) => (
           <span key={i} className="inline-flex shrink-0">{unit}</span>

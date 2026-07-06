@@ -106,7 +106,10 @@ export function VehicleCard({ vehicle, priority, className }: VehicleCardProps) 
           </div>
 
           <h3 className="mt-2 font-display text-xl font-bold leading-tight tracking-tight text-fg md:text-2xl">
-            <span className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-1 transition-[background-size] duration-500 ease-out group-hover:bg-[length:100%_1px]">
+            {/* `vc-title` strips the hover-underline background on touch
+                devices (globals.css) — it can never show there and is
+                implicated in mobile WebKit text-paint glitches. */}
+            <span className="vc-title bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-1 transition-[background-size] duration-500 ease-out group-hover:bg-[length:100%_1px]">
               {vehicle.model}
             </span>
             {vehicle.variant && (

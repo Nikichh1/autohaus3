@@ -47,7 +47,7 @@ export function PlaceholderPage({
             <span className="size-1.5 animate-pulse rounded-full bg-accent" />
             <span className="label-fine text-fg-muted">В подготовка</span>
           </div>
-          <h1 className="mt-7 font-display text-display-md font-extrabold leading-[0.92] tracking-tight text-fg md:text-display-lg">
+          <h1 className="mt-7 font-display text-display-sm font-extrabold leading-[0.94] tracking-tight text-fg md:text-display-lg">
             {title}
           </h1>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-fg-muted">

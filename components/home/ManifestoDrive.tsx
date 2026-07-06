@@ -101,7 +101,7 @@ export function ManifestoDrive() {
                 total={WORDS.length}
                 progress={p}
                 reduce={!!reduce}
-                maxBlur={reduce ? 0 : lite ? 7 : 10}
+                maxBlur={reduce || lite ? 0 : 10}
               />
             ))}
           </p>

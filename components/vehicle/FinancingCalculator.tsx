@@ -98,7 +98,7 @@ export function FinancingCalculator({
                       : undefined
                   }
                   className={
-                    "rounded-full border px-4 py-2 text-sm tabular-nums transition-colors " +
+                    "rounded-full border px-4 py-2 text-sm tabular-nums transition-colors max-md:min-h-11 max-md:min-w-14 " +
                     (term === t
                       ? "border-accent text-ink"
                       : "border-line-strong text-fg-muted hover:border-accent hover:text-fg")

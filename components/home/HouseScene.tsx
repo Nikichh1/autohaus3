@@ -178,7 +178,7 @@ export function HouseScene() {
         </div>
 
         {/* ── Mobile: place cards, built for the thumb ── */}
-        <div className="no-scrollbar -mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:-mx-8 sm:px-8 lg:hidden">
+        <div className="no-scrollbar -mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 sm:-mx-8 sm:px-8 lg:hidden">
           {experiences.map((e, i) => (
             <Link
               key={e.href}

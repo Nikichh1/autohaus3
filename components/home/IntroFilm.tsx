@@ -11,6 +11,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { CinematicGrade } from "@/components/fx/CinematicGrade";
+import { StatCounter } from "@/components/motion/StatCounter";
 
 /**
  * The Opening Film — a scroll-driven cinematic entry into the dealership.
@@ -49,6 +50,13 @@ const PROOF: [number, string, string][] = [
   [20, "+", "години на пазара"],
   [4800, "+", "доставени автомобила"],
   [35, "", "представени марки"],
+];
+
+/** Same proof, phone-length labels — they must read whole, never truncate. */
+const PROOF_MOBILE: [number, string, string][] = [
+  [20, "+", "години"],
+  [4800, "+", "автомобила"],
+  [35, "", "марки"],
 ];
 
 export function IntroFilm() {
@@ -100,8 +108,10 @@ export function IntroFilm() {
   }, []);
 
   useEffect(() => {
-    if (!mounted || reduce) return;
-    const dir = isMobile ? "frames-m" : "frames";
+    // Phones never download the frame sequence — they get the lightweight
+    // title-card opening below instead.
+    if (!mounted || reduce || isMobile) return;
+    const dir = "frames";
     const imgs: HTMLImageElement[] = [];
     let count = 0;
     let cancelled = false;
@@ -151,7 +161,7 @@ export function IntroFilm() {
   };
 
   useAnimationFrame(() => {
-    if (reduce || !activeRef.current) return;
+    if (reduce || isMobile || !activeRef.current) return;
     const el = wrapperRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -204,7 +214,8 @@ export function IntroFilm() {
     [],
   );
 
-  // Reduced motion → one still, the wordmark, no pin.
+  // Reduced motion → one still, the wordmark, no pin. Phones get the
+  // portrait facility shot; desktop keeps the film poster (CSS-gated).
   if (reduce) {
     return (
       <section className="relative h-[100svh] w-full overflow-hidden bg-base">
@@ -213,7 +224,16 @@ export function IntroFilm() {
           src={`/intro/intro-poster.jpg?v=${ASSET_VERSION}`}
           alt=""
           aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
+          className="film-desktop absolute inset-0 h-full w-full object-cover"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/photos/autohaus-hero-m-1080.webp"
+          srcSet="/photos/autohaus-hero-m-750.webp 750w, /photos/autohaus-hero-m-1080.webp 1080w"
+          sizes="100vw"
+          alt=""
+          aria-hidden
+          className="film-mobile absolute inset-0 h-full w-full object-cover"
         />
         <div
           aria-hidden
@@ -239,11 +259,28 @@ export function IntroFilm() {
 
   const ready = loaded >= FRAME_COUNT;
 
+  // ── Mobile: a purpose-built, weightless opening — one graded title card,
+  // letterboxed, with the brand, the line and live proof. No pin, no scrub,
+  // no frame downloads: instant and fluid on any phone. Pre-hydration BOTH
+  // variants are in the server HTML, CSS-gated (`.film-mobile` /
+  // `.film-desktop` in globals.css mirror the JS isMobile test) — a phone
+  // paints its own opening immediately instead of laying out the 380vh
+  // desktop film and swapping after React mounts. The wrapper div keeps its
+  // identity across hydration so the opening never remounts mid-animation.
+  const showMobile = !mounted || isMobile;
+  const showDesktop = !mounted || !isMobile;
   return (
+    <>
+    {showMobile ? (
+      <div className="film-mobile">
+        <MobileOpening />
+      </div>
+    ) : null}
+    {showDesktop ? (
     <section
       ref={wrapperRef}
       style={{ height: `${isMobile ? SCRUB_VH_MOBILE : SCRUB_VH}vh` }}
-      className="relative bg-base"
+      className={`relative bg-base ${mounted ? "" : "film-desktop"}`}
       aria-label="Въведение"
     >
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-black">
@@ -390,6 +427,8 @@ export function IntroFilm() {
         )}
       </div>
     </section>
+    ) : null}
+    </>
   );
 }
 
@@ -566,5 +605,96 @@ function BeatWord({
     <motion.span style={{ opacity, y }} className="mr-[0.28em] inline-block">
       {word}
     </motion.span>
+  );
+}
+
+/**
+ * The mobile opening — purpose-built, not scaled down. One graded title card:
+ * poster, letterbox, the wordmark, the line and live proof — a single screen
+ * that loads instantly and scrolls straight into the collection. No pin, no
+ * canvas, no frame downloads: fluid on the oldest phone in the pocket.
+ */
+function MobileOpening() {
+  const rise = (delay: number) => ({
+    initial: { opacity: 0, y: 22 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] as const, delay },
+  });
+  return (
+    <section className="relative flex h-[100svh] flex-col justify-end overflow-hidden bg-black" aria-label="Въведение">
+      {/* The house at golden hour — a purpose-cut portrait crop of the
+          facility (no runtime pano-cropping, no upscaling), settling in one
+          slow cinematic breath. */}
+      <motion.img
+        src="/photos/autohaus-hero-m-1080.webp"
+        srcSet="/photos/autohaus-hero-m-750.webp 750w, /photos/autohaus-hero-m-1080.webp 1080w"
+        sizes="100vw"
+        alt=""
+        aria-hidden
+        // The phone LCP — fetch it at highest priority, before anything else.
+        fetchPriority="high"
+        decoding="async"
+        initial={{ scale: 1.14 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 9, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <CinematicGrade deep />
+      {/* static letterbox + legibility base */}
+      <div aria-hidden className="absolute inset-x-0 top-0 z-10 h-[4.5svh] bg-black" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 z-10 h-[4.5svh] bg-black" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/45" />
+
+      <div className="relative z-20 px-6 pb-[11svh]">
+        <motion.div {...rise(0.1)} className="relative w-48 select-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo.svg" alt="AutoHaus" className="w-full" />
+          {/* light sweep across the wordmark glyphs — the expensive detail */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+            style={{
+              WebkitMaskImage: "url(/brand/logo.svg)",
+              maskImage: "url(/brand/logo.svg)",
+              WebkitMaskSize: "100% 100%",
+              maskSize: "100% 100%",
+            }}
+          >
+            <motion.div
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent"
+              initial={{ x: "-130%" }}
+              animate={{ x: "340%" }}
+              transition={{ duration: 1.5, delay: 1, ease: "easeInOut", repeat: Infinity, repeatDelay: 4 }}
+            />
+          </div>
+        </motion.div>
+        <motion.p
+          {...rise(0.24)}
+          className="mt-5 max-w-[17ch] font-display text-[1.65rem] font-extrabold leading-[1.12] tracking-[-0.02em] text-white"
+        >
+          Някои коли се купуват.{" "}
+          <span className="text-white/60">Други се заслужават.</span>
+        </motion.p>
+        <motion.div {...rise(0.4)} className="mt-6 flex items-center gap-6 border-t border-white/15 pt-4">
+          {PROOF_MOBILE.map(([to, suffix, label]) => (
+            <div key={label} className="min-w-0">
+              <p className="font-display text-xl font-extrabold leading-none text-white">
+                <StatCounter to={to} suffix={suffix} duration={1.8} />
+              </p>
+              <p className="label-fine mt-1.5 text-white/55">{label}</p>
+            </div>
+          ))}
+        </motion.div>
+        <motion.p {...rise(0.55)} className="label-fine mt-7 flex items-center gap-3 text-white/60">
+          Продължете надолу
+          <span className="vd-scrollcue block h-6 w-px bg-white/60" />
+        </motion.p>
+      </div>
+
+      {/* reel label — brand continuity with the desktop film */}
+      <span className="label-fine absolute bottom-[1.1svh] left-5 z-20 text-white/40">
+        Reel 01 · AutoHaus
+      </span>
+    </section>
   );
 }

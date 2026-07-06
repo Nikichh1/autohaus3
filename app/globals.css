@@ -486,6 +486,81 @@
   img, video { display: block; max-width: 100%; height: auto; }
 }
 
+/* ───────────────  Mobile-only refinements (phones, <768px)  ───────────────
+   Scoped so desktop and tablet render pixel-identically. */
+
+/* iOS Safari zooms the page when focusing a form control whose font-size is
+   under 16px. Forcing 1rem on phones keeps every input, select and textarea
+   zoom-free — the single most common "cheap site" tell on a phone. */
+@media (pointer: coarse) and (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}
+
+/* ── Vehicle-card paint hardening (touch devices) ──
+   On hover-less devices the card's desktop-only machinery is pure liability:
+   the TiltCard 3D context (perspective + preserve-3d) can never tilt without
+   a pointer, yet it forces every card through the 3D compositing path — a
+   known source of "text randomly not painted" glitches in mobile WebKit
+   (this is what ate the vehicle titles on phones). The hover-underline's
+   background-image on the title span is equally dead on touch. Flatten all
+   of it where hover doesn't exist; hover devices keep every effect. */
+@media (hover: none), (pointer: coarse) {
+  .tilt-3d {
+    transform: none !important;
+    transform-style: flat !important;
+  }
+  .vc-title {
+    background-image: none !important;
+  }
+  /* The catalog must paint straight from server HTML — never sit at the
+     entrance animation's opacity:0 while a slower phone hydrates. */
+  .vgrid,
+  .vgrid > * {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+/* Financing sliders — a fingertip needs more than a 22px thumb. The padding +
+   content-box clip grows the hit area to ~30px while the visible 4px track
+   and thumb stay exactly as designed. Phones only. */
+@media (pointer: coarse) and (max-width: 767px) {
+  .range-accent input[type="range"] {
+    padding: 13px 0;
+    background-clip: content-box;
+  }
+  .range-accent input[type="range"]::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+  .range-accent input[type="range"]::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* SSR gate for the homepage films. The heavy scroll-scrubbed sections and the
+   purpose-built phone scenes are BOTH in the server HTML, gated by these
+   classes, so a phone never flashes (or lays out) the 380vh desktop film while
+   React hydrates. Media queries mirror the JS `isMobile` tests exactly; after
+   mount the components render only the active variant. */
+.film-desktop { display: none; }
+@media (min-width: 1024px) and (pointer: fine) {
+  .film-desktop { display: block; }
+  .film-mobile { display: none; }
+}
+/* The Machine gate is width-only (matches its JS test). */
+.machine-desktop { display: none; }
+@media (min-width: 1024px) {
+  .machine-desktop { display: block; }
+  .machine-mobile { display: none; }
+}
+
 /* Lenis smooth-scroll integration — required CSS hooks */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
@@ -883,6 +958,26 @@ html[data-intro-active] [data-site-nav] {
     transform: translateX(0) scale(1);
     filter: blur(0) brightness(1);
   }
+}
+
+/* Phones run the same slide without the animated blur/brightness filter —
+   filtering a full-page snapshot every frame is a real jank source on
+   mid-range GPUs, and at phone scale the depth cue is invisible anyway. */
+@media (pointer: coarse) and (max-width: 767px) {
+  html[data-vt="slide"]::view-transition-old(root) {
+    animation-name: vt-home-leave-lite;
+  }
+  html[data-vt="slide"]::view-transition-new(root) {
+    animation-name: vt-vehicles-enter-lite;
+  }
+}
+@keyframes vt-home-leave-lite {
+  from { transform: translateX(0) scale(1); }
+  to { transform: translateX(-100%) scale(0.97); }
+}
+@keyframes vt-vehicles-enter-lite {
+  from { transform: translateX(9%) scale(1.025); opacity: 0.72; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

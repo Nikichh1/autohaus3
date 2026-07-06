@@ -85,7 +85,7 @@ export function VehicleStage({
 
       {/* Thumbs */}
       {images.length > 1 && (
-        <div className="no-scrollbar mt-3 flex gap-2.5 overflow-x-auto pb-0.5">
+        <div className="no-scrollbar mt-3 flex gap-2.5 overflow-x-auto overscroll-x-contain pb-0.5">
           {images.map((img, i) => (
             <button
               key={i}

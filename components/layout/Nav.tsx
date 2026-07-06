@@ -87,7 +87,7 @@ export function Nav() {
               initial={false}
               animate={{ opacity: isSolid ? 1 : 0 }}
               transition={{ duration: 0.45, ease: [0.2, 0, 0, 1] }}
-              className="glass-pane edge-light pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] backdrop-blur-xl backdrop-saturate-150"
+              className="glass-pane edge-light pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] backdrop-blur-md backdrop-saturate-150 md:backdrop-blur-xl"
             >
               {/* cursor-tracked specular — a soft pool of light follows the
                   pointer across the glass (desktop only) */}
@@ -243,19 +243,22 @@ export function Nav() {
                   <ArrowUpRight className="size-3.5" />
                 </span>
               </Link>
-              {/* One-tap call — phones surface the number where it converts */}
+              {/* One-tap call — phones surface the number where it converts.
+                  44px targets + a tactile press — thumb-first ergonomics. */}
               <a
                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                 aria-label={`Обадете се: ${contactInfo.phone}`}
-                className="flex size-10 items-center justify-center rounded-full border border-line text-fg transition-colors hover:border-accent hover:text-accent lg:hidden"
+                className="flex size-11 items-center justify-center rounded-full border border-line text-fg transition-[border-color,color,transform] duration-200 hover:border-accent hover:text-accent active:scale-90 lg:hidden"
               >
                 <Phone className="size-[1.05rem]" />
               </a>
               <button
                 type="button"
                 aria-label="Отвори меню"
+                aria-haspopup="dialog"
+                aria-expanded={mobileOpen}
                 onClick={() => setMobileOpen(true)}
-                className="flex size-10 items-center justify-center rounded-full border border-line text-fg transition-colors hover:border-accent lg:hidden"
+                className="flex size-11 items-center justify-center rounded-full border border-line text-fg transition-[border-color,transform] duration-200 hover:border-accent active:scale-90 lg:hidden"
               >
                 <Menu className="size-5" />
               </button>

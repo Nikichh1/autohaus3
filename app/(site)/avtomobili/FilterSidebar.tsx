@@ -179,6 +179,7 @@ export function FilterSidebar({
       <FilterGroup title="Макс. пробег (км)">
         <input
           type="number"
+          inputMode="numeric"
           min={0}
           step={5000}
           placeholder="без ограничение"
@@ -187,14 +188,14 @@ export function FilterSidebar({
             const v = e.target.value;
             onChange({ mileageMax: v ? Number(v) : undefined });
           }}
-          className="h-10 w-full bg-transparent border-b border-line text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+          className="h-12 w-full bg-transparent border-b border-line text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
         />
       </FilterGroup>
 
       <button
         type="button"
         onClick={onClear}
-        className="mt-8 self-start text-xs uppercase tracking-wider text-fg-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+        className="mt-6 flex min-h-11 items-center self-start text-xs uppercase tracking-wider text-fg-muted underline-offset-4 transition-colors hover:text-accent hover:underline active:text-accent"
       >
         Изчисти всички филтри
       </button>
@@ -216,11 +217,13 @@ function FilterGroup({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-line py-5">
+    <div className="border-b border-line">
+      {/* The padding lives ON the button — the whole row is the tap target. */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between text-left"
+        aria-expanded={open}
+        className="flex w-full items-center justify-between py-5 text-left"
       >
         <span className="eyebrow text-fg">{title}</span>
         <ChevronDown
@@ -233,7 +236,7 @@ function FilterGroup({
       {open && (
         <div
           className={cn(
-            "mt-4 flex flex-col gap-1",
+            "flex flex-col gap-1 pb-5",
             scroll && "no-scrollbar max-h-64 overflow-y-auto overscroll-contain pr-1",
           )}
           data-lenis-prevent={scroll ? "" : undefined}
@@ -257,16 +260,17 @@ function FilterCheckbox({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="group flex cursor-pointer items-center gap-3 py-1.5">
+    // py-2.5 → ~44px rows: reliable one-thumb toggling in the drawer.
+    <label className="group flex cursor-pointer items-center gap-3 py-2.5 active:opacity-70">
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
         className="peer sr-only"
       />
-      <span className="grid size-4 shrink-0 place-items-center border border-line-strong transition-colors group-hover:border-accent peer-checked:border-accent peer-checked:bg-accent">
+      <span className="grid size-5 shrink-0 place-items-center border border-line-strong transition-colors group-hover:border-accent peer-checked:border-accent peer-checked:bg-accent">
         {checked && (
-          <svg viewBox="0 0 16 16" fill="none" className="size-3 text-ink">
+          <svg viewBox="0 0 16 16" fill="none" className="size-3.5 text-ink">
             <path d="M3 8.5L6.5 12 13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
@@ -280,7 +284,7 @@ function FilterCheckbox({
         {label}
       </span>
       {count !== undefined && (
-        <span className="text-xs text-fg-subtle">{count}</span>
+        <span className="text-xs tabular-nums text-fg-subtle">{count}</span>
       )}
     </label>
   );
@@ -306,9 +310,10 @@ function RangeInputs({
   onChange: (min: number | undefined, max: number | undefined) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-4">
       <input
         type="number"
+        inputMode="numeric"
         min={min}
         max={max}
         step={step}
@@ -318,10 +323,11 @@ function RangeInputs({
           const v = e.target.value;
           onChange(v ? Number(v) : undefined, valueMax);
         }}
-        className="h-10 w-full bg-transparent border-b border-line text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+        className="h-12 w-full bg-transparent border-b border-line text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
       />
       <input
         type="number"
+        inputMode="numeric"
         min={min}
         max={max}
         step={step}
@@ -331,7 +337,7 @@ function RangeInputs({
           const v = e.target.value;
           onChange(valueMin, v ? Number(v) : undefined);
         }}
-        className="h-10 w-full bg-transparent border-b border-line text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+        className="h-12 w-full bg-transparent border-b border-line text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
       />
     </div>
   );

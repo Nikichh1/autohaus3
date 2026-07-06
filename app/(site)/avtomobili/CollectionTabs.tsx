@@ -32,7 +32,7 @@ export function CollectionTabs({ active, counts, total, onSelect }: Props) {
 
   return (
     <div className="border-b border-line pb-7">
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto overscroll-x-contain px-4 md:mx-0 md:px-0">
         {tabs.map((t) => {
           const isActive = t.slug === active;
           return (
@@ -41,7 +41,7 @@ export function CollectionTabs({ active, counts, total, onSelect }: Props) {
               type="button"
               onClick={() => onSelect(t.slug)}
               className={cn(
-                "relative shrink-0 rounded-full px-5 py-2.5 text-sm transition-colors duration-300",
+                "relative shrink-0 rounded-full px-5 py-2.5 text-sm transition-colors duration-300 max-md:min-h-11",
                 isActive ? "text-ink" : "text-fg-muted hover:text-fg",
               )}
             >

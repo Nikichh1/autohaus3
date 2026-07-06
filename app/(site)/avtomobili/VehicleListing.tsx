@@ -162,17 +162,21 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
 
       <div className="mt-6 lg:mt-8">
 
-      {/* Mobile filter drawer */}
+      {/* Mobile filter drawer — slides up like a native sheet */}
       <AnimatePresence>
         {mobileFiltersOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Филтри"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 40 }}
             className="field-graphite fixed inset-0 z-[60] flex flex-col lg:hidden"
             data-lenis-prevent
           >
-            <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6">
               <FilterSidebar
                 filters={filters}
                 counts={counts}
@@ -185,12 +189,15 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
                 onClose={() => setMobileFiltersOpen(false)}
               />
             </div>
-            {/* Sticky apply bar — always reachable, no scroll-to-bottom hunt */}
-            <div className="border-t border-line-strong bg-base/85 p-4 backdrop-blur-xl">
+            {/* Sticky apply bar — always reachable, clear of the home indicator */}
+            <div
+              className="border-t border-line-strong bg-base/85 px-4 pt-4 backdrop-blur-xl"
+              style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+            >
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="flex h-14 w-full items-center justify-center rounded-full bg-fg text-sm font-medium text-ink transition-colors hover:bg-accent"
+                className="flex h-14 w-full items-center justify-center rounded-full bg-fg text-sm font-medium text-ink transition-[background-color,transform] duration-200 hover:bg-accent active:scale-[0.98]"
               >
                 Покажи {results.length}{" "}
                 {results.length === 1 ? "автомобил" : "автомобила"}
@@ -203,13 +210,13 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
       {/* Results */}
       <div>
         <h2 className="sr-only">Резултати</h2>
-        {/* Mobile filter button + sort */}
-        <div className="flex items-center justify-between gap-3 border-b border-line pb-4">
+        {/* Mobile filter button + sort — wraps instead of clipping on narrow phones */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-4 py-2 text-sm text-fg transition-colors hover:border-accent lg:hidden"
+              className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-4 py-2 text-sm text-fg transition-[border-color,transform] duration-200 hover:border-accent active:scale-95 max-md:min-h-11 lg:hidden"
             >
               <SlidersHorizontal className="size-4" />
               Филтри
@@ -257,7 +264,10 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-10 grid grid-cols-1 gap-x-8 gap-y-14 sm:mt-12 md:grid-cols-2 md:gap-y-16 xl:grid-cols-3 2xl:grid-cols-4"
+            // `vgrid` — touch devices force the grid and its entrance wrappers
+            // visible (globals.css): the catalog paints straight from server
+            // HTML instead of waiting invisible for hydration + animation.
+            className="vgrid mt-10 grid grid-cols-1 gap-x-8 gap-y-14 sm:mt-12 md:grid-cols-2 md:gap-y-16 xl:grid-cols-3 2xl:grid-cols-4"
           >
             {results.map((v, i) => (
               <FadeIn key={v.id} delay={(i % 6) * 0.06} y={24}>
@@ -288,7 +298,7 @@ function RentalToggle({
       onClick={onToggle}
       aria-pressed={active}
       className={cn(
-        "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
+        "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors max-md:min-h-11",
         active
           ? "border-accent bg-accent text-ink"
           : "border-line-strong bg-white/[0.03] text-fg-muted hover:border-accent hover:text-fg",
@@ -321,7 +331,7 @@ function SortDropdown({
         value={value}
         onChange={(e) => onChange(e.target.value as SortKey)}
         aria-label="Сортиране на резултатите"
-        className="appearance-none rounded-full border border-line-strong bg-white/[0.03] py-2 pl-4 pr-10 text-sm text-fg transition-colors hover:border-accent focus:border-accent focus:outline-none [&>option]:bg-surface [&>option]:text-fg"
+        className="appearance-none rounded-full border border-line-strong bg-white/[0.03] py-2 pl-4 pr-10 text-sm text-fg transition-colors hover:border-accent focus:border-accent focus:outline-none max-md:min-h-11 [&>option]:bg-surface [&>option]:text-fg"
       >
         {sortOptions.map((o) => (
           <option key={o.value} value={o.value}>
@@ -390,7 +400,7 @@ function ActiveFilterPills({
           key={i}
           type="button"
           onClick={p.onRemove}
-          className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-accent hover:text-accent"
+          className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-accent hover:text-accent max-md:min-h-9 max-md:px-3.5"
         >
           {p.label}
           <span className="text-base leading-none">×</span>
@@ -399,7 +409,7 @@ function ActiveFilterPills({
       <button
         type="button"
         onClick={onClear}
-        className="ml-2 text-xs uppercase tracking-wider text-fg-subtle underline-offset-4 hover:text-fg-muted hover:underline"
+        className="ml-2 text-xs uppercase tracking-wider text-fg-subtle underline-offset-4 hover:text-fg-muted hover:underline max-md:min-h-9"
       >
         Изчисти всички
       </button>

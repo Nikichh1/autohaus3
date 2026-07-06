@@ -23,9 +23,11 @@ export async function Footer() {
   return (
     <footer className="border-t border-line bg-base">
       <div className="mx-auto max-w-(--container-wide) px-4 pb-12 pt-24 md:px-8 md:pt-32 xl:px-12">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
+        {/* Phones: brand and contacts full-width, the two link columns side by
+            side — half the scroll, same hierarchy. md+ is untouched. */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:gap-12">
           {/* Brand block */}
-          <div className="md:col-span-5">
+          <div className="col-span-2 md:col-span-5">
             <Link href="/" aria-label="AutoHaus — Начало">
               <Image
                 src="/brand/logo.svg"
@@ -83,13 +85,13 @@ export async function Footer() {
             </ul>
           </div>
 
-          <div className="md:col-span-3">
+          <div className="col-span-2 md:col-span-3">
             <FooterHeading>Контакти</FooterHeading>
             <ul className="mt-5 space-y-3 text-sm text-fg-muted">
               <li>
                 <a
                   href={`tel:${contact.phone.replace(/\s/g, "")}`}
-                  className="transition-colors hover:text-fg"
+                  className="transition-colors hover:text-fg max-md:inline-flex max-md:min-h-9 max-md:items-center"
                 >
                   {contact.phone}
                 </a>
@@ -97,7 +99,7 @@ export async function Footer() {
               <li>
                 <a
                   href={`mailto:${contact.email}`}
-                  className="transition-colors hover:text-fg"
+                  className="transition-colors hover:text-fg max-md:inline-flex max-md:min-h-9 max-md:items-center"
                 >
                   {contact.email}
                 </a>
@@ -121,7 +123,10 @@ export async function Footer() {
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
             {legal.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="transition-colors hover:text-fg-muted">
+                <Link
+                  href={l.href}
+                  className="transition-colors hover:text-fg-muted max-md:inline-flex max-md:min-h-9 max-md:items-center"
+                >
                   {l.label}
                 </Link>
               </li>
@@ -150,7 +155,7 @@ function FooterLink({
     <li>
       <Link
         href={href}
-        className="group inline-flex items-center gap-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
+        className="group inline-flex items-center gap-1.5 text-sm text-fg-muted transition-colors hover:text-fg max-md:min-h-9"
       >
         {children}
         <ArrowUpRight className="size-3 -translate-x-1 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
