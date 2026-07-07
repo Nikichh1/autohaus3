@@ -500,6 +500,17 @@
   }
 }
 
+/* Touch devices lighten the image reveal: a 40px blur (blur-2xl) animating to
+   sharp on every image is a heavy per-frame GPU cost on older phones while
+   images stream in during a scroll. Cap the pending-state blur so the reveal
+   stays but the cost drops; hover devices keep the full deblur. */
+@media (hover: none), (pointer: coarse) {
+  .blur-img.blur-2xl {
+    --tw-blur: blur(10px);
+    filter: blur(10px);
+  }
+}
+
 /* ── Vehicle-card paint hardening (touch devices) ──
    On hover-less devices the card's desktop-only machinery is pure liability:
    the TiltCard 3D context (perspective + preserve-3d) can never tilt without

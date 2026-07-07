@@ -229,7 +229,10 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           <div className="mb-[clamp(40px,6vh,72px)] flex flex-wrap items-end justify-between gap-6">
             <div>
               <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 02 — Перформанс ]</p>
-              <h2 className="font-mega text-[clamp(38px,5.6vw,86px)] leading-[0.94]"><SplitText text={"Числата разказват\nсамо началото"} /></h2>
+              {/* text-fg re-resolves INSIDE .vd-dark — without it these mega
+                  headings inherit the cream theme's near-black from the page
+                  root and vanish against the dark islands. */}
+              <h2 className="font-mega text-[clamp(38px,5.6vw,86px)] leading-[0.94] text-fg"><SplitText text={"Числата разказват\nсамо началото"} /></h2>
             </div>
             <p className="max-w-[280px] text-[13.5px] leading-relaxed text-fg-muted">Заводски стойности — мощност, динамика и характер на този автомобил.</p>
           </div>
@@ -240,7 +243,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   <div className="flex items-baseline gap-4 md:gap-[18px]">
                     <span className="text-xs font-semibold text-accent">{String(i + 1).padStart(2, "0")}</span>
                     <div>
-                      <p className="font-mega text-[clamp(15px,1.6vw,20px)] leading-none">{r.label}</p>
+                      <p className="font-mega text-[clamp(15px,1.6vw,20px)] leading-none text-fg">{r.label}</p>
                       <p className="mt-1.5 text-xs text-fg-subtle">{r.sub}</p>
                     </div>
                   </div>
@@ -265,7 +268,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-[1180px]">
             <div className="mb-[clamp(36px,5vh,56px)] text-center">
               <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 03 — Финансиране ]</p>
-              <h2 className="font-mega text-[clamp(34px,4.8vw,74px)] leading-[0.94]"><SplitText text={"Притежавайте я при\nсвои условия"} /></h2>
+              <h2 className="font-mega text-[clamp(34px,4.8vw,74px)] leading-[0.94] text-fg"><SplitText text={"Притежавайте я при\nсвои условия"} /></h2>
             </div>
             <FadeIn>
               <FinancingCalculator price={vehicle.price} annualRatePct={financing.annualRatePct} downPaymentPct={financing.downPaymentPct} termMonths={financing.termMonths} />
@@ -312,7 +315,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0a0c10]/55 via-[#0a0c10]/10 to-[#0a0c10]/85" />
         <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-8 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">[ 05 ] Присъствие</p>
-          <h2 className="mt-5 max-w-[16ch] font-mega text-[clamp(40px,8.4vw,132px)] leading-[0.9] [text-shadow:0_8px_50px_rgba(0,0,0,.5)]"><SplitText text="Създадена да доминира пътя" /></h2>
+          <h2 className="mt-5 max-w-[16ch] font-mega text-[clamp(40px,8.4vw,132px)] leading-[0.9] text-fg [text-shadow:0_8px_50px_rgba(0,0,0,.5)]"><SplitText text="Създадена да доминира пътя" /></h2>
         </div>
         <div aria-hidden className="absolute bottom-6 left-6 z-[3] text-[10.5px] font-semibold uppercase tracking-[0.16em] text-fg-muted md:left-8">F: 1/640 · ISO 200 · 35MM</div>
       </section>
@@ -328,7 +331,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           </div>
           <div>
             <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 06 — Произход ]</p>
-            <h2 className="font-mega text-[clamp(32px,4.6vw,64px)] leading-[0.96]"><SplitText text={"Историята е\nчаст от стойността"} /></h2>
+            <h2 className="font-mega text-[clamp(32px,4.6vw,64px)] leading-[0.96] text-fg"><SplitText text={"Историята е\nчаст от стойността"} /></h2>
             <p className="mt-6 max-w-[460px] text-[clamp(15px,1.5vw,18px)] leading-relaxed text-fg/75">
               Всеки автомобил преминава щателна проверка, преди да достигне шоурума — пълна документация и ясна история. Купувате с увереност, а не с надежда.
             </p>
@@ -336,7 +339,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
               {facts.map((f) => (
                 <FadeIn key={f.k}>
                   <dt className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">{f.k}</dt>
-                  <dd className="mt-2 font-mega text-[21px] leading-none">{f.v}</dd>
+                  <dd className="mt-2 font-mega text-[21px] leading-none text-fg">{f.v}</dd>
                 </FadeIn>
               ))}
             </dl>
@@ -357,7 +360,10 @@ export default async function VehicleDetailPage({ params }: PageProps) {
               <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-subtle">[ 07 — Галерия ]</p>
               <h2 className="font-mega text-[clamp(38px,5.6vw,86px)] leading-[0.94] text-fg"><SplitText text="В движение" /></h2>
             </div>
-            <p className="max-w-[264px] text-[13px] leading-relaxed text-fg-muted">Скролвайте — всеки кадър се движи със собствен ритъм.</p>
+            {/* The hint matches the gesture: phones swipe a film strip,
+                larger screens scroll the parallax masonry. */}
+            <p className="hidden max-w-[264px] text-[13px] leading-relaxed text-fg-muted sm:block">Скролвайте — всеки кадър се движи със собствен ритъм.</p>
+            <p className="max-w-[264px] text-[13px] leading-relaxed text-fg-muted sm:hidden">Плъзнете настрани — кадър по кадър.</p>
           </div>
           <VehicleCollage images={vehicle.images} alt={fullLabel} />
         </div>
@@ -373,7 +379,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           <div className="relative z-[3] px-[clamp(24px,5vw,72px)] py-[clamp(40px,7vw,84px)]">
             <div className="mx-auto max-w-[760px] text-center">
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">[ 08 ] AutoHaus · Пловдив</p>
-              <h2 className="mt-4 font-mega text-[clamp(44px,7.4vw,116px)] leading-[0.9]"><SplitText text="Заповядайте на оглед" /></h2>
+              <h2 className="mt-4 font-mega text-[clamp(44px,7.4vw,116px)] leading-[0.9] text-fg"><SplitText text="Заповядайте на оглед" /></h2>
               <p className="mx-auto mt-5 max-w-[480px] text-[15px] leading-relaxed text-fg/80">
                 Оставете данните си или ни се обадете — ще подготвим автомобила за вашето посещение.
               </p>

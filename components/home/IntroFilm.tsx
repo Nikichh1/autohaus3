@@ -59,7 +59,21 @@ const PROOF_MOBILE: [number, string, string][] = [
   [35, "", "марки"],
 ];
 
-export function IntroFilm() {
+export type IntroCopy = {
+  eyebrow: string;
+  line1: string;
+  line2: string;
+  scrollHint: string;
+};
+
+const DEFAULT_INTRO_COPY: IntroCopy = {
+  eyebrow: "Пловдив · Премиум автомобили",
+  line1: "Някои коли се купуват.",
+  line2: "Други се заслужават.",
+  scrollHint: "Продължете надолу",
+};
+
+export function IntroFilm({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy } = {}) {
   const reduce = useReducedMotion();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -273,7 +287,7 @@ export function IntroFilm() {
     <>
     {showMobile ? (
       <div className="film-mobile">
-        <MobileOpening />
+        <MobileOpening copy={copy} />
       </div>
     ) : null}
     {showDesktop ? (
@@ -614,7 +628,7 @@ function BeatWord({
  * that loads instantly and scrolls straight into the collection. No pin, no
  * canvas, no frame downloads: fluid on the oldest phone in the pocket.
  */
-function MobileOpening() {
+function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
   const rise = (delay: number) => ({
     initial: { opacity: 0, y: 22 },
     animate: { opacity: 1, y: 0 },
@@ -646,34 +660,18 @@ function MobileOpening() {
       <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/45" />
 
       <div className="relative z-20 px-6 pb-[11svh]">
-        <motion.div {...rise(0.1)} className="relative w-48 select-none">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo.svg" alt="AutoHaus" className="w-full" />
-          {/* light sweep across the wordmark glyphs — the expensive detail */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 overflow-hidden"
-            style={{
-              WebkitMaskImage: "url(/brand/logo.svg)",
-              maskImage: "url(/brand/logo.svg)",
-              WebkitMaskSize: "100% 100%",
-              maskSize: "100% 100%",
-            }}
-          >
-            <motion.div
-              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/80 to-transparent"
-              initial={{ x: "-130%" }}
-              animate={{ x: "340%" }}
-              transition={{ duration: 1.5, delay: 1, ease: "easeInOut", repeat: Infinity, repeatDelay: 4 }}
-            />
-          </div>
-        </motion.div>
+        {/* The nav already carries the wordmark — the opening leads with the
+            place and the line, never a second logo in the same frame. */}
+        <motion.p {...rise(0.1)} className="label-fine flex items-center gap-3 text-accent">
+          <span aria-hidden className="h-px w-8 bg-accent/50" />
+          {copy.eyebrow}
+        </motion.p>
         <motion.p
           {...rise(0.24)}
-          className="mt-5 max-w-[17ch] font-display text-[1.65rem] font-extrabold leading-[1.12] tracking-[-0.02em] text-white"
+          className="mt-4 max-w-[15ch] font-display text-[2rem] font-extrabold leading-[1.08] tracking-[-0.025em] text-white"
         >
-          Някои коли се купуват.{" "}
-          <span className="text-white/60">Други се заслужават.</span>
+          {copy.line1}{" "}
+          <span className="text-white/60">{copy.line2}</span>
         </motion.p>
         <motion.div {...rise(0.4)} className="mt-6 flex items-center gap-6 border-t border-white/15 pt-4">
           {PROOF_MOBILE.map(([to, suffix, label]) => (
@@ -686,7 +684,7 @@ function MobileOpening() {
           ))}
         </motion.div>
         <motion.p {...rise(0.55)} className="label-fine mt-7 flex items-center gap-3 text-white/60">
-          Продължете надолу
+          {copy.scrollHint}
           <span className="vd-scrollcue block h-6 w-px bg-white/60" />
         </motion.p>
       </div>

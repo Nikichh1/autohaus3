@@ -9,11 +9,11 @@ import {
   cubicBezier,
   type MotionValue,
 } from "framer-motion";
+import { FadeIn } from "@/components/motion/FadeIn";
 const REVEAL_EASE = cubicBezier(0.45, 0, 0.55, 1);
 
-const WORDS =
-  "Не просто автосалон — дом за машини с характер. Всяка е подбрана, проверена и готова за пътя."
-    .split(" ");
+const DEFAULT_STATEMENT =
+  "Не просто автосалон — дом за машини с характер. Всяка е подбрана, проверена и готова за пътя.";
 
 /**
  * Chapter 02 — The Philosophy. A pinned statement scene: each word emerges
@@ -21,10 +21,14 @@ const WORDS =
  * the sentence is being machined out of the dark. Behind it, wind-tunnel
  * streamlines draw across the graphite: the aerodynamic signature of a car
  * that isn't there. Architectural, precise, no ornament.
+ *
+ * The statement is admin-editable; both the phone still and the desktop
+ * word-by-word reveal derive from the same string, so they never diverge.
  */
-export function ManifestoDrive() {
+export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: string }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const WORDS = statement.trim().split(/\s+/);
   // Phones keep the true blur-to-focus, but words share a focus group of three
   // so the scene animates ~6 filter layers instead of 17 — cinematic on a
   // mid-range GPU. Desktop resolves word by word.
@@ -47,11 +51,65 @@ export function ManifestoDrive() {
   });
 
   return (
+    <>
+    {/* ── Phones: the manifesto as a still — the same statement, machined
+        type and streamlines, but no pin, no scrub, no per-word blur. The
+        pinned scene ships SSR'd with every word at blur(10px)/30% opacity,
+        which reads as a broken smear on a phone until far into the scrub. */}
+    {/* No data-chapter here — the chapter rail is desktop-only and must keep
+        exactly one owner of "02" (the pinned section below). */}
+    <section
+      aria-label="Философия"
+      className="sheet field-graphite relative -mt-[8vh] overflow-hidden md:hidden"
+    >
+      <div aria-hidden className="brushed pointer-events-none absolute inset-0 opacity-[0.05]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(60% 44% at 86% 8%, rgba(201,207,214,0.1), transparent 64%)",
+        }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute right-[-2%] top-6 select-none font-display text-[26vw] font-extrabold leading-none tracking-tighter text-white/[0.03]"
+      >
+        02
+      </span>
+      <div className="relative z-10 px-5 pb-10 pt-20">
+        <FadeIn>
+          <p className="label-fine text-fg-subtle">
+            <span aria-hidden className="mr-2 text-accent">[</span>
+            02 · Философията на AutoHaus
+            <span aria-hidden className="ml-2 text-accent">]</span>
+          </p>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <p className="text-titanium mt-7 font-display text-[1.8rem] font-extrabold leading-[1.18] tracking-tight">
+            {WORDS.join(" ")}
+          </p>
+        </FadeIn>
+      </div>
+      {/* static wind-tunnel signature under the statement */}
+      <svg
+        viewBox="0 0 1440 520"
+        preserveAspectRatio="xMidYMax slice"
+        fill="none"
+        aria-hidden
+        className="h-40 w-full text-accent/35 opacity-50"
+      >
+        {LINES.map((d) => (
+          <path key={d} d={d} stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+        ))}
+      </svg>
+    </section>
+
     <section
       ref={ref}
       data-chapter="02"
       data-chapter-label="Философия"
-      className="sheet field-graphite relative -mt-[8vh] h-[150vh] md:h-[170vh]"
+      className="sheet field-graphite relative -mt-[8vh] hidden h-[150vh] md:block md:h-[170vh]"
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
         {/* atmosphere */}
@@ -108,6 +166,7 @@ export function ManifestoDrive() {
         </div>
       </div>
     </section>
+    </>
   );
 }
 

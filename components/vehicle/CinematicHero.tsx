@@ -77,7 +77,9 @@ export function CinematicHero({
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-muted">[ 01 — {collLabel || "AutoHaus"} Collection ]</span>
             </motion.div>
 
-            <h1 className="font-mega text-[clamp(58px,10vw,150px)] leading-[0.86] text-fg">
+            {/* Phones cap the mega type — long model names (e.g. "Range Rover
+                P530 Autobiography LWB") must not stack into a 4-line wall. */}
+            <h1 className="font-mega text-[clamp(40px,11.5vw,58px)] leading-[0.9] text-fg md:text-[clamp(58px,10vw,150px)] md:leading-[0.86]">
               <SplitText text={vehicle.model} />
             </h1>
             {subtitle && (

@@ -43,7 +43,15 @@ const experiences = [
  * hand-held gallery of place cards. Ends on the visit strip: address, hours,
  * one CTA.
  */
-export function HouseScene() {
+type HouseCopy = { eyebrow: string; headingLine1: string; headingLine2: string };
+
+const DEFAULT_COPY: HouseCopy = {
+  eyebrow: "06 · Изживяването",
+  headingLine1: "Повече от място",
+  headingLine2: "за покупка.",
+};
+
+export function HouseScene({ copy = DEFAULT_COPY }: { copy?: HouseCopy }) {
   const reduce = useReducedMotion();
   const [active, setActive] = useState(0);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -76,12 +84,12 @@ export function HouseScene() {
         {/* Intro */}
         <div className="max-w-2xl">
           <FadeIn>
-            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>06 · Изживяването<span aria-hidden className="ml-2 text-accent">]</span></p>
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-accent">]</span></p>
           </FadeIn>
           <FadeIn delay={0.08}>
-            <h2 className="mt-6 font-display text-display-sm font-bold leading-[0.98] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]">
-              Повече от място
-              <span className="block font-medium tracking-[-0.02em] text-fg-muted">за покупка.</span>
+            <h2 className="mt-6 font-display text-[clamp(2.1rem,9vw,3.25rem)] font-bold leading-[1.02] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)] md:leading-[0.98]">
+              {copy.headingLine1}
+              <span className="block font-medium tracking-[-0.02em] text-fg-muted">{copy.headingLine2}</span>
             </h2>
           </FadeIn>
         </div>

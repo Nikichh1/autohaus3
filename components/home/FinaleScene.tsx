@@ -49,7 +49,16 @@ const CREDITS = [
  * brand's two voices (mega caps / serif italic), one magnetic CTA, the contact
  * strip, and the credentials rolling past like a credits crawl.
  */
-export function FinaleScene() {
+type FinaleCopy = { headingLine1: string; headingLine2: string; subcopy: string };
+
+const DEFAULT_COPY: FinaleCopy = {
+  headingLine1: "Вашата следваща",
+  headingLine2: "глава.",
+  subcopy:
+    "Открийте автомобила, който ще разказва вашата история — на живо в Пловдив или чрез нашата услуга по издирване и внос.",
+};
+
+export function FinaleScene({ copy = DEFAULT_COPY }: { copy?: FinaleCopy }) {
   const reduce = useReducedMotion();
   const headRef = useRef<HTMLHeadingElement>(null);
   const headInView = useInView(headRef, { once: true, amount: 0.2 });
@@ -113,7 +122,7 @@ export function FinaleScene() {
                 animate={reduce || headInView ? { y: "0%" } : { y: "110%" }}
                 transition={{ duration: 1.05, ease: ease.entrance, delay: 0.12 }}
               >
-                Вашата следваща
+                {copy.headingLine1}
               </motion.span>
             </span>
             <span className="block overflow-hidden pb-[0.12em]">
@@ -123,15 +132,14 @@ export function FinaleScene() {
                 animate={reduce || headInView ? { y: "0%" } : { y: "110%" }}
                 transition={{ duration: 1.05, ease: ease.entrance, delay: 0.26 }}
               >
-                глава.
+                {copy.headingLine2}
               </motion.span>
             </span>
           </h2>
 
           <FadeIn delay={0.24}>
             <p className="mx-auto mt-7 max-w-lg text-fg/70 md:text-lg">
-              Открийте автомобила, който ще разказва вашата история — на живо в
-              Пловдив или чрез нашата услуга по издирване и внос.
+              {copy.subcopy}
             </p>
           </FadeIn>
 

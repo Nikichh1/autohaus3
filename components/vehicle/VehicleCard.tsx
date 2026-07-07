@@ -105,7 +105,10 @@ export function VehicleCard({ vehicle, priority, className }: VehicleCardProps) 
             </p>
           </div>
 
-          <h3 className="mt-2 font-display text-xl font-bold leading-tight tracking-tight text-fg md:text-2xl">
+          {/* Reserve two lines so a 1-line name and a 2-line name leave their
+              spec strips + prices aligned across a grid row (min, never clips
+              a rare 3rd line). */}
+          <h3 className="mt-2 min-h-[2.5em] font-display text-xl font-bold leading-tight tracking-tight text-fg md:text-2xl">
             {/* `vc-title` strips the hover-underline background on touch
                 devices (globals.css) — it can never show there and is
                 implicated in mobile WebKit text-paint glitches. */}

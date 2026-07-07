@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -19,6 +19,17 @@ type ServiceHeroProps = {
 export function ServiceHero({ label, tagline, image }: ServiceHeroProps) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  // Touch devices hold the hero still — a scroll-scrubbed scale/translate on
+  // the largest image on the page is a real jank source on older phones, and
+  // at scroll 0 (page load) the transform is already identity, so dropping it
+  // is invisible. Desktop keeps the parallax.
+  const [motionOn, setMotionOn] = useState(true);
+  useEffect(() => {
+    // Mount-time capability check — mirrors the site's other isMobile gates.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMotionOn(window.matchMedia("(pointer: fine)").matches);
+  }, []);
+  const still = reduce || !motionOn;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -26,12 +37,12 @@ export function ServiceHero({ label, tagline, image }: ServiceHeroProps) {
   const y = useTransform(
     scrollYProgress,
     [0, 1],
-    reduce ? ["0%", "0%"] : ["0%", "18%"],
+    still ? ["0%", "0%"] : ["0%", "18%"],
   );
   const scale = useTransform(
     scrollYProgress,
     [0, 1],
-    reduce ? [1, 1] : [1, 1.12],
+    still ? [1, 1] : [1, 1.12],
   );
 
   return (

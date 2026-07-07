@@ -35,12 +35,32 @@ export function VehicleCollage({ images, alt }: { images: string[]; alt: string 
   const gridCls = colCount === 1 ? "grid-cols-1" : colCount === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
 
   return (
-    <div className={`grid gap-4 md:gap-6 ${gridCls}`}>
-      {cols.map((col, ci) => (
-        <div key={ci} className={`flex flex-col gap-4 md:gap-6 ${ci === 1 ? "md:mt-16" : ci === 2 ? "md:mt-7" : ""}`}>
-          {col.map((src) => figure(src, n++))}
-        </div>
-      ))}
-    </div>
+    <>
+      {/* ── Phones: a swipeable film strip — one thumb-height frame at a time
+          with the next one peeking in, instead of a screen-tall image wall.
+          Photos keep their shoot order; the counter reads like a reel. */}
+      <div className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-6 pb-2 sm:hidden">
+        {images.map((src, i) => (
+          <figure
+            key={i}
+            className="vd-cut relative m-0 aspect-[4/3] w-[80vw] shrink-0 snap-center overflow-hidden bg-elevated shadow-[0_24px_50px_-34px_rgba(20,20,24,0.5)]"
+          >
+            <BlurImage src={src} alt={`${alt} — ${i + 1}`} fill sizes="80vw" className="object-cover" />
+            <figcaption className="absolute bottom-3 left-3.5 z-10 font-mega text-[10px] tracking-[0.14em] text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,.5)]">
+              {String(i + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")} · AutoHaus
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+
+      {/* ── sm+ keeps the editorial parallax masonry exactly as designed. */}
+      <div className={`hidden gap-4 sm:grid md:gap-6 ${gridCls}`}>
+        {cols.map((col, ci) => (
+          <div key={ci} className={`flex flex-col gap-4 md:gap-6 ${ci === 1 ? "md:mt-16" : ci === 2 ? "md:mt-7" : ""}`}>
+            {col.map((src) => figure(src, n++))}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

@@ -15,21 +15,27 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+// Playfair is used for a single italic serif line on service pages only.
+// preload:false keeps it off every OTHER page's critical font payload — it
+// downloads on demand where it's actually rendered (display:swap covers FOUT).
 const playfair = Playfair_Display({
   subsets: ["latin", "cyrillic"],
   variable: "--font-playfair",
   display: "swap",
   style: ["normal", "italic"],
   weight: ["400"],
+  preload: false,
 });
 
 // Condensed bold display — the "Brier-like" poster headline face for product
-// pages. Cyrillic subset is required for the Bulgarian section titles.
+// pages. Cyrillic subset is required for the Bulgarian section titles. Only
+// product/service pages use it, so it is not preloaded on the homepage/listing.
 const oswald = Oswald({
   subsets: ["latin", "cyrillic"],
   variable: "--font-oswald",
   display: "swap",
   weight: ["500", "600", "700"],
+  preload: false,
 });
 
 export const metadata: Metadata = {

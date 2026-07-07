@@ -14,7 +14,15 @@ import { Reveal } from "@/components/motion/Reveal";
 import { Magnetic } from "@/components/fx/Magnetic";
 import { usePageTransition } from "@/components/transition/PageTransition";
 
-type Props = { vehicles: Vehicle[]; total: number };
+type CollectionCopy = { eyebrow: string; heading: string; subcopy: string };
+type Props = { vehicles: Vehicle[]; total: number; copy?: CollectionCopy };
+
+const DEFAULT_COPY: CollectionCopy = {
+  eyebrow: "01 · Подбрани от нас",
+  heading: "Колекция",
+  subcopy:
+    "Малка по обем, безкомпромисна по подбор. Всеки автомобил — проверен, с история и готов за пътя.",
+};
 
 /**
  * Chapter 03 — The Collection.
@@ -31,7 +39,7 @@ type Props = { vehicles: Vehicle[]; total: number };
 // the common 6-car feature set; fixed auto-rows keep every cell equal height.
 const SPANS = ["lg:col-span-4", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2"];
 
-export function CollectionGallery({ vehicles, total }: Props) {
+export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Props) {
   if (!vehicles.length) return null;
   const remaining = Math.max(total - vehicles.length, 0);
 
@@ -39,29 +47,33 @@ export function CollectionGallery({ vehicles, total }: Props) {
     <section
       data-chapter="01"
       data-chapter-label="Колекция"
-      className="sheet light relative -mt-[10vh] bg-[#eef0f2] py-16 md:py-[13vh]"
+      // Phones drop the sheet's pull-up: the opening is a single screen there,
+      // and a white sliver riding over its letterbox reads as a glitch.
+      className="sheet light relative -mt-[10vh] bg-[#eef0f2] py-16 max-md:mt-0 md:py-[13vh]"
     >
       <div className="mx-auto max-w-wide px-5 sm:px-8 md:px-12">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-xl">
             <FadeIn>
-              <p className="label-fine text-fg-subtle">[ 01 · Подбрани от нас ]</p>
+              <p className="label-fine text-fg-subtle">[ {copy.eyebrow} ]</p>
             </FadeIn>
             <Reveal>
               <h2 className="mt-4 font-display text-[clamp(2.4rem,4.6vw,4.4rem)] font-extrabold leading-[0.94] tracking-[-0.035em] text-fg">
-                Колекция<span className="text-fg-muted">.</span>
+                {copy.heading}<span className="text-fg-muted">.</span>
               </h2>
             </Reveal>
             <FadeIn delay={0.1}>
               <p className="mt-5 max-w-md text-fg-muted md:text-lg">
-                Малка по обем, безкомпромисна по подбор. Всеки автомобил —
-                проверен, с история и готов за пътя.
+                {copy.subcopy}
               </p>
             </FadeIn>
           </div>
-          <FadeIn delay={0.15}>
-            <ViewAllLink total={total} className="hidden md:inline-flex" />
+          {/* Gate on the WRAPPER: `hidden` merged into the button's own class
+              list loses to its `inline-flex` in the stylesheet order, which
+              leaked this desktop pill onto phones (a duplicate CTA). */}
+          <FadeIn delay={0.15} className="hidden md:block">
+            <ViewAllLink total={total} />
           </FadeIn>
         </div>
 
@@ -134,8 +146,10 @@ function VehicleTile({ v, feature }: { v: Vehicle; feature?: boolean }) {
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="label-fine text-white/60">{v.year}</p>
+              {/* Phones wrap to two lines instead of chopping the model name
+                  ("Range Rove…"); md+ keeps the original single-line truncate. */}
               <p
-                className={`mt-1 truncate font-display font-extrabold tracking-tight text-white ${
+                className={`mt-1 font-display font-extrabold tracking-tight text-white max-md:line-clamp-2 max-md:leading-[1.05] md:truncate ${
                   feature ? "text-3xl md:text-4xl" : "text-2xl"
                 }`}
               >

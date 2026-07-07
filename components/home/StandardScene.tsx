@@ -48,7 +48,22 @@ const proof: { to: number; suffix: string; label: string }[] = [
  * sweeps to 100+ as it enters view, the four guarantees as machined rows, and
  * a rotating inspection seal. Trust rendered as instrumentation, not slogans.
  */
-export function StandardScene() {
+type StandardCopy = {
+  eyebrow: string;
+  headingLine1: string;
+  headingLine2: string;
+  subcopy: string;
+};
+
+const DEFAULT_COPY: StandardCopy = {
+  eyebrow: "05 · Стандартът",
+  headingLine1: "Един стандарт.",
+  headingLine2: "без компромис.",
+  subcopy:
+    "Всеки автомобил — наличен или поръчан — преминава през един и същ безкомпромисен процес, преди да получи нов собственик.",
+};
+
+export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) {
   return (
     <section
       data-chapter="05"
@@ -74,18 +89,17 @@ export function StandardScene() {
           {/* Left — the argument + the instrument */}
           <div className="lg:col-span-5">
             <FadeIn>
-              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>05 · Стандартът<span aria-hidden className="ml-2 text-accent">]</span></p>
+              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-accent">]</span></p>
             </FadeIn>
             <Reveal>
-              <h2 className="mt-6 font-display text-display-sm font-extrabold leading-[0.96] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]">
-                Един стандарт.
-                <span className="block font-medium tracking-[-0.02em] text-fg-muted">без компромис.</span>
+              <h2 className="mt-6 font-display text-[clamp(2.1rem,9vw,3.25rem)] font-extrabold leading-[1.02] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)] md:leading-[0.96]">
+                {copy.headingLine1}
+                <span className="block font-medium tracking-[-0.02em] text-fg-muted">{copy.headingLine2}</span>
               </h2>
             </Reveal>
             <FadeIn delay={0.12}>
               <p className="mt-6 max-w-md text-fg-muted md:text-lg">
-                Всеки автомобил — наличен или поръчан — преминава през един и същ
-                безкомпромисен процес, преди да получи нов собственик.
+                {copy.subcopy}
               </p>
             </FadeIn>
 
@@ -201,8 +215,10 @@ function DiagnosticGauge() {
         <GaugeNeedle on={on} reduce={!!reduce} />
         <circle cx={140} cy={150} r={5} fill="currentColor" />
       </svg>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center">
-        <p className="font-display text-3xl font-extrabold leading-none text-fg md:text-4xl">
+      {/* Phones drop the readout below the arc baseline so the needle never
+          crosses the numeral; md+ keeps the original composition. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center max-md:translate-y-2">
+        <p className="font-display text-3xl font-extrabold leading-none text-fg max-md:text-[1.6rem] md:text-4xl">
           <StatCounter to={100} suffix="+" duration={1.9} />
         </p>
         <p className="label-fine mt-1.5 text-fg-muted">точки диагностика</p>

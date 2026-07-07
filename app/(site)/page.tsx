@@ -40,22 +40,66 @@ export async function generateMetadata(): Promise<Metadata> {
  * A fixed chapter rail (desktop) and a sticky CTA (mobile) frame the film.
  */
 export default async function HomePage() {
-  const all = await getAllPublicVehicles();
-  const featuredOnly = await getFeaturedVehicles();
+  const [all, featuredOnly, cms] = await Promise.all([
+    getAllPublicVehicles(),
+    getFeaturedVehicles(),
+    getContent(),
+  ]);
   // Fall back to the newest inventory if nothing is explicitly featured yet.
   const featured = (featuredOnly.length ? featuredOnly : all).slice(0, 6);
 
   return (
     <div className="bg-base">
       <ChapterRail />
-      <IntroFilm />
-      <CollectionGallery vehicles={featured} total={all.length} />
-      <ManifestoDrive />
+      <IntroFilm
+        copy={{
+          eyebrow: cms["home.intro.eyebrow"],
+          line1: cms["home.intro.line1"],
+          line2: cms["home.intro.line2"],
+          scrollHint: cms["home.intro.scrollHint"],
+        }}
+      />
+      <CollectionGallery
+        vehicles={featured}
+        total={all.length}
+        copy={{
+          eyebrow: cms["home.collection.eyebrow"],
+          heading: cms["home.collection.heading"],
+          subcopy: cms["home.collection.subcopy"],
+        }}
+      />
+      <ManifestoDrive statement={cms["home.manifesto.statement"]} />
       <MachineScene />
-      <ConciergeScene />
-      <StandardScene />
-      <HouseScene />
-      <FinaleScene />
+      <ConciergeScene
+        copy={{
+          eyebrow: cms["home.concierge.eyebrow"],
+          headingLine1: cms["home.concierge.headingLine1"],
+          headingLine2: cms["home.concierge.headingLine2"],
+          subcopy: cms["home.concierge.subcopy"],
+        }}
+      />
+      <StandardScene
+        copy={{
+          eyebrow: cms["home.standard.eyebrow"],
+          headingLine1: cms["home.standard.headingLine1"],
+          headingLine2: cms["home.standard.headingLine2"],
+          subcopy: cms["home.standard.subcopy"],
+        }}
+      />
+      <HouseScene
+        copy={{
+          eyebrow: cms["home.house.eyebrow"],
+          headingLine1: cms["home.house.headingLine1"],
+          headingLine2: cms["home.house.headingLine2"],
+        }}
+      />
+      <FinaleScene
+        copy={{
+          headingLine1: cms["home.finale.headingLine1"],
+          headingLine2: cms["home.finale.headingLine2"],
+          subcopy: cms["home.finale.subcopy"],
+        }}
+      />
       <MobileStickyCTA />
       <EngineRumble />
     </div>

@@ -15,7 +15,13 @@ import {
 } from "@/lib/cms/registry";
 
 const PREVIEW: Partial<Record<ContentGroupId, string>> = {
-  home: "/",
+  home_intro: "/",
+  home_collection: "/",
+  home_manifesto: "/",
+  home_concierge: "/",
+  home_standard: "/",
+  home_house: "/",
+  home_finale: "/",
   home_seo: "/",
   contact: "/kontakti/",
 };

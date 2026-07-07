@@ -9,7 +9,20 @@ import { FadeIn } from "@/components/motion/FadeIn";
 import { contactInfo } from "@/lib/nav";
 import { ease } from "@/lib/motion";
 
-const HEADLINE = ["Мечтаната кола —", "намерена и доставена."];
+type ConciergeCopy = {
+  eyebrow: string;
+  headingLine1: string;
+  headingLine2: string;
+  subcopy: string;
+};
+
+const DEFAULT_COPY: ConciergeCopy = {
+  eyebrow: "04 · Издирване и внос",
+  headingLine1: "Мечтаната кола —",
+  headingLine2: "намерена и доставена.",
+  subcopy:
+    "Дори когато търсеният автомобил не е в нашата зала, го откриваме чрез проверена международна мрежа, инспектираме всеки детайл и го доставяме до Пловдив — напълно прозрачно.",
+};
 
 const steps = [
   {
@@ -51,12 +64,13 @@ const marques = [
  * graphite left — one console, one call. Below, the process as a drawn
  * timeline, and the sourcing network gliding past as the signature marquee.
  */
-export function ConciergeScene() {
+export function ConciergeScene({ copy = DEFAULT_COPY }: { copy?: ConciergeCopy }) {
   const reduce = useReducedMotion();
   const headRef = useRef<HTMLHeadingElement>(null);
   const headInView = useInView(headRef, { once: true, amount: 0.2 });
   const lineRef = useRef<HTMLDivElement>(null);
   const lineInView = useInView(lineRef, { once: true, amount: 0.4 });
+  const HEADLINE = [copy.headingLine1, copy.headingLine2];
 
   return (
     <section
@@ -146,11 +160,11 @@ export function ConciergeScene() {
         {/* ── Left: the ask ── */}
         <div className="max-w-xl">
           <FadeIn>
-            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>04 · Издирване и внос<span aria-hidden className="ml-2 text-accent">]</span></p>
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-accent">]</span></p>
           </FadeIn>
           <h2
             ref={headRef}
-            className="mt-6 text-balance font-display text-display-sm font-extrabold leading-[0.98] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)]"
+            className="mt-6 text-balance font-display text-[clamp(2.1rem,9vw,3.25rem)] font-extrabold leading-[1.02] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)] md:leading-[0.98]"
           >
             {HEADLINE.map((line, i) => (
               <span key={line} className="block overflow-hidden pb-[0.08em]">
@@ -167,9 +181,7 @@ export function ConciergeScene() {
           </h2>
           <FadeIn delay={0.14}>
             <p className="mt-6 max-w-lg text-fg-muted md:text-lg">
-              Дори когато търсеният автомобил не е в нашата зала, го откриваме чрез
-              проверена международна мрежа, инспектираме всеки детайл и го доставяме
-              до Пловдив — напълно прозрачно.
+              {copy.subcopy}
             </p>
           </FadeIn>
 

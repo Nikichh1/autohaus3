@@ -9,6 +9,13 @@ import { cn } from "@/lib/utils";
  * sharp on load (the "expensive" deblur, not a flashy fade). Use for
  * below-the-fold imagery (cards, galleries). For LCP/hero images keep the
  * dedicated entrance animation instead so first paint isn't delayed.
+ *
+ * `will-change` is applied ONLY while the reveal is pending, then dropped —
+ * a persistent `will-change` promotes every image to its own compositor layer
+ * for the life of the page (82 cards → 82 permanent layers), which is a real
+ * memory/scroll cost on older phones. The `blur-img` hook lets touch devices
+ * lighten the blur radius (globals.css) since a 40px blur animating on every
+ * image is expensive on low-end GPUs.
  */
 export function BlurImage({ className, alt, ...props }: ImageProps) {
   const [loaded, setLoaded] = useState(false);
@@ -19,10 +26,10 @@ export function BlurImage({ className, alt, ...props }: ImageProps) {
       alt={alt}
       onLoad={() => setLoaded(true)}
       className={cn(
-        "transition-[filter,transform,opacity] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[filter,transform]",
+        "blur-img transition-[filter,transform,opacity] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
         loaded
           ? "scale-100 opacity-100 blur-0"
-          : "scale-[1.06] opacity-0 blur-2xl",
+          : "scale-[1.06] opacity-0 blur-2xl will-change-[filter,transform]",
         className,
       )}
     />

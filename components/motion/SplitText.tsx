@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -9,6 +10,12 @@ const EASE = [0.16, 1, 0.3, 1] as const;
  * slides each up into view, staggered, when the heading scrolls into view.
  * Use `\n` to force line breaks. Inherits font/size from the parent heading.
  * No-op under reduced motion.
+ *
+ * The visibility trigger observes the OUTER wrapper, never the translated
+ * words: IntersectionObserver clips a target against its ancestors' overflow,
+ * so a word parked at y:110% inside its clip box intersects nothing — ever —
+ * and `whileInView` on the word itself can never fire. (This is what made
+ * vehicle titles render as empty space.) Same pattern as <Reveal>.
  */
 export function SplitText({
   text,
@@ -22,6 +29,8 @@ export function SplitText({
   once?: boolean;
 }) {
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once, amount: "some" });
   const lines = text.split("\n");
 
   if (reduce) {
@@ -36,7 +45,7 @@ export function SplitText({
 
   let idx = 0;
   return (
-    <>
+    <span ref={ref} className="block">
       {lines.map((line, li) => (
         <span key={li} className="block">
           {line.split(" ").map((word, wi) => {
@@ -46,8 +55,7 @@ export function SplitText({
                 <motion.span
                   className="inline-block"
                   initial={{ y: "110%" }}
-                  whileInView={{ y: 0 }}
-                  viewport={{ once, amount: 0.4 }}
+                  animate={inView ? { y: 0 } : { y: "110%" }}
                   transition={{ duration: 0.8, delay: d, ease: EASE }}
                 >
                   {word}
@@ -57,6 +65,6 @@ export function SplitText({
           })}
         </span>
       ))}
-    </>
+    </span>
   );
 }

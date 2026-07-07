@@ -5,9 +5,13 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ease } from "@/lib/motion";
 
 /**
- * Premium intro curtain — a brief count-up over a full-screen graphite field that
- * wipes up to reveal the page. Shows once per session per vehicle (sessionStorage),
- * and not at all under reduced motion. Pure transform/clip-path → no layout cost.
+ * Premium intro curtain — a brief brand flash that wipes up to reveal the page.
+ * Shows once per session per vehicle (sessionStorage). Skipped entirely under
+ * reduced motion AND on touch devices: the pages are statically generated and
+ * open instantly, so on a phone the curtain was pure perceived latency — the
+ * product page now opens with zero delay there. Desktop keeps a quick flash.
+ * Pure transform/clip-path → no layout cost, and it never blocks scroll for
+ * longer than the wipe.
  */
 export function ProductLoader({ slug, brand, model }: { slug: string; brand: string; model: string }) {
   const reduce = useReducedMotion();
@@ -16,6 +20,9 @@ export function ProductLoader({ slug, brand, model }: { slug: string; brand: str
 
   useEffect(() => {
     if (reduce) return;
+    // Phones open the page instantly — no curtain, no scroll lock.
+    if (typeof window !== "undefined" && !window.matchMedia("(pointer: fine)").matches) return;
+
     let key = "";
     try {
       key = `vh-loaded:${slug}`;
@@ -24,7 +31,8 @@ export function ProductLoader({ slug, brand, model }: { slug: string; brand: str
       /* sessionStorage unavailable — still show once */
     }
 
-    const dur = 900;
+    // Snappy: a ~0.5s count-up, no linger — the page is already there.
+    const dur = 460;
     let t0 = 0;
     let raf = 0;
     let to = 0;
@@ -35,7 +43,7 @@ export function ProductLoader({ slug, brand, model }: { slug: string; brand: str
       if (p < 1) raf = requestAnimationFrame(tick);
       else {
         try { if (key) sessionStorage.setItem(key, "1"); } catch { /* ignore */ }
-        to = window.setTimeout(() => setShow(false), 240);
+        to = window.setTimeout(() => setShow(false), 60);
       }
     };
     // Defer the first setState out of the synchronous effect body (one frame).
@@ -60,13 +68,13 @@ export function ProductLoader({ slug, brand, model }: { slug: string; brand: str
           className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-base"
           initial={{ clipPath: "inset(0 0 0% 0)" }}
           exit={{ clipPath: "inset(0 0 100% 0)" }}
-          transition={{ duration: 0.9, ease: ease.entrance }}
+          transition={{ duration: 0.55, ease: ease.entrance }}
         >
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: ease.out }}
+            transition={{ duration: 0.4, ease: ease.out }}
             className="flex flex-col items-center"
           >
             <span className="text-[11px] font-semibold uppercase tracking-[0.4em] text-accent">
