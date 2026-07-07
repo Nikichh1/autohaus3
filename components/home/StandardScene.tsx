@@ -1,13 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, animate, useMotionValue, useInView, useReducedMotion } from "framer-motion";
 import { ShieldCheck, Gauge, FileCheck, Wrench } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { FadeIn } from "@/components/motion/FadeIn";
-import { StatCounter } from "@/components/motion/StatCounter";
 import { ButtonLink } from "@/components/ui/Button";
-import { ease } from "@/lib/motion";
 
 const standards = [
   {
@@ -20,7 +16,7 @@ const standards = [
     n: "02",
     Icon: Gauge,
     title: "Мултиточкова проверка",
-    body: "Над 100 точки техническа диагностика. Нито един автомобил не влиза в залата без нея.",
+    body: "Задълбочена техническа диагностика. Нито един автомобил не влиза в залата без нея.",
   },
   {
     n: "03",
@@ -36,17 +32,11 @@ const standards = [
   },
 ];
 
-const proof: { to: number; suffix: string; label: string }[] = [
-  { to: 100, suffix: "+", label: "точки техническа диагностика" },
-  { to: 20, suffix: "+", label: "години една репутация" },
-  { to: 4800, suffix: "+", label: "автомобила, доставени по този стандарт" },
-];
-
 /**
- * Chapter 06 — The Standard, presented as the engineering certificate it is:
- * technical-drawing paper, a corner-ticked frame, a live diagnostic gauge that
- * sweeps to 100+ as it enters view, the four guarantees as machined rows, and
- * a rotating inspection seal. Trust rendered as instrumentation, not slogans.
+ * Chapter 06 — The Standard. Presented as an engineering certificate: a
+ * technical-drawing frame, a signed-guarantee seal, and the four assurances as
+ * machined rows. Trust rendered as calm craft — no gauges, no loud counters,
+ * closing on a single quiet line of reputation.
  */
 type StandardCopy = {
   eyebrow: string;
@@ -86,7 +76,7 @@ export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) 
 
       <div className="relative z-10 mx-auto max-w-wide px-5 sm:px-8 md:px-12">
         <div className="grid gap-x-16 gap-y-14 lg:grid-cols-12">
-          {/* Left — the argument + the instrument */}
+          {/* Left — the argument + the sealed guarantee */}
           <div className="lg:col-span-5">
             <FadeIn>
               <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-accent">]</span></p>
@@ -103,9 +93,19 @@ export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) 
               </p>
             </FadeIn>
 
-            {/* The diagnostic gauge */}
+            {/* Sealed guarantee — the certificate's emblem, calm and tactile */}
             <FadeIn delay={0.18}>
-              <DiagnosticGauge />
+              <div className="mt-10 flex items-center gap-5 rounded-2xl border border-line bg-surface/70 p-5 shadow-luxe">
+                <InspectionSeal className="size-[72px] shrink-0" />
+                <div>
+                  <p className="font-display text-base font-bold tracking-tight text-fg">
+                    Гаранция в писмен вид
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-fg-muted">
+                    Всеки автомобил напуска залата с подписан документ — спокойствие, което държите в ръце.
+                  </p>
+                </div>
+              </div>
             </FadeIn>
 
             <FadeIn delay={0.26}>
@@ -149,27 +149,16 @@ export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) 
                 </FadeIn>
               ))}
             </ul>
-
-            {/* rotating inspection seal */}
-            <div aria-hidden className="pointer-events-none absolute -bottom-6 right-0 hidden lg:block">
-              <InspectionSeal />
-            </div>
           </div>
         </div>
 
-        {/* Proof in numbers */}
+        {/* Closing line — reputation as a quiet statement, not a scoreboard */}
         <FadeIn>
-          <div className="mt-16 grid gap-y-10 border-t border-line-strong pt-10 sm:grid-cols-3 sm:gap-x-8 md:mt-24 md:pt-12">
-            {proof.map((p) => (
-              <div key={p.label}>
-                <p className="font-display text-4xl font-extrabold leading-none tracking-tight text-fg md:text-5xl xl:text-6xl">
-                  <StatCounter to={p.to} suffix={p.suffix} duration={2.2} />
-                </p>
-                <p className="mt-3 max-w-[16rem] text-xs uppercase leading-relaxed tracking-wider text-fg-muted">
-                  {p.label}
-                </p>
-              </div>
-            ))}
+          <div className="mt-16 border-t border-line-strong pt-10 md:mt-24 md:pt-12">
+            <p className="mx-auto max-w-3xl text-center font-display text-[clamp(1.35rem,2.6vw,2.1rem)] font-semibold leading-snug tracking-tight text-fg">
+              Над две десетилетия. Хиляди доверени собственици.
+              <span className="text-fg-muted"> Един стандарт.</span>
+            </p>
           </div>
         </FadeIn>
       </div>
@@ -177,66 +166,19 @@ export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) 
   );
 }
 
-/** Semi-circular gauge — needle sweeps and the arc fills as it enters view. */
-function DiagnosticGauge() {
-  const reduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.5 });
-  const on = reduce || inView;
-
-  const ticks = Array.from({ length: 11 }, (_, i) => {
-    const a = Math.PI - (i / 10) * Math.PI; // 180° → 0°
-    const x1 = 140 + 112 * Math.cos(a);
-    const y1 = 150 - 112 * Math.sin(a);
-    const x2 = 140 + 122 * Math.cos(a);
-    const y2 = 150 - 122 * Math.sin(a);
-    return [x1, y1, x2, y2] as const;
-  });
-
+/** Slow-rotating inspection seal — circular type around the monogram idea.
+ *  Honours reduced motion via the `.vd-spin` rule in globals.css. */
+function InspectionSeal({ className = "size-28" }: { className?: string }) {
   return (
-    <div ref={ref} className="relative mt-10 max-w-[300px]">
-      <svg viewBox="0 0 280 170" fill="none" aria-hidden className="w-full text-fg">
-        {/* track */}
-        <path d="M36 150 A104 104 0 0 1 244 150" stroke="currentColor" strokeOpacity={0.12} strokeWidth={3} />
-        {/* fill sweeps with the needle */}
-        <motion.path
-          d="M36 150 A104 104 0 0 1 244 150"
-          stroke="currentColor"
-          strokeWidth={3}
-          initial={reduce ? { pathLength: 0.94 } : { pathLength: 0 }}
-          animate={on ? { pathLength: 0.94 } : {}}
-          transition={{ duration: 1.8, ease: ease.entrance, delay: 0.2 }}
-        />
-        {ticks.map(([x1, y1, x2, y2], i) => (
-          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeOpacity={0.3} strokeWidth={1.5} />
-        ))}
-        {/* needle — rotated via the SVG attribute about the exact hub point
-            (CSS transform-origin on SVG groups is unreliable) */}
-        <GaugeNeedle on={on} reduce={!!reduce} />
-        <circle cx={140} cy={150} r={5} fill="currentColor" />
-      </svg>
-      {/* Phones drop the readout below the arc baseline so the needle never
-          crosses the numeral; md+ keeps the original composition. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center max-md:translate-y-2">
-        <p className="font-display text-3xl font-extrabold leading-none text-fg max-md:text-[1.6rem] md:text-4xl">
-          <StatCounter to={100} suffix="+" duration={1.9} />
-        </p>
-        <p className="label-fine mt-1.5 text-fg-muted">точки диагностика</p>
-      </div>
-    </div>
-  );
-}
-
-/** Slow-rotating "inspection seal" — circular type around the monogram idea. */
-function InspectionSeal() {
-  return (
-    <div className="vd-spin size-28 opacity-60">
+    <div className={`vd-spin ${className}`}>
       <svg viewBox="0 0 120 120" fill="none" className="size-full text-fg">
         <defs>
           <path id="sealCircle" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" />
         </defs>
-        <circle cx={60} cy={60} r={57} stroke="currentColor" strokeOpacity={0.35} />
-        <circle cx={60} cy={60} r={33} stroke="currentColor" strokeOpacity={0.35} />
+        <circle cx={60} cy={60} r={57} stroke="currentColor" strokeOpacity={0.28} />
+        <circle cx={60} cy={60} r={33} stroke="currentColor" strokeOpacity={0.28} />
+        {/* centre mark — a check, the signature of approval */}
+        <path d="M50 60 L57 67 L72 51" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" strokeOpacity={0.8} />
         <text className="fill-current" style={{ fontSize: 10.5, letterSpacing: "0.32em", textTransform: "uppercase" }}>
           <textPath href="#sealCircle">
             Аутохаус · Проверен стандарт · Пловдив ·
@@ -244,35 +186,5 @@ function InspectionSeal() {
         </text>
       </svg>
     </div>
-  );
-}
-
-/** Gauge needle — SVG-attribute rotation about the hub (140,150); sweeps in
- *  with a physical ease when the certificate enters view. */
-function GaugeNeedle({ on, reduce }: { on: boolean; reduce: boolean }) {
-  const ref = useRef<SVGGElement>(null);
-  const angle = useMotionValue(reduce ? 79 : -90);
-  useEffect(() => {
-    const apply = (v: number) =>
-      ref.current?.setAttribute("transform", `rotate(${v} 140 150)`);
-    apply(angle.get());
-    const unsub = angle.on("change", apply);
-    if (reduce) {
-      angle.set(79);
-      return unsub;
-    }
-    if (on) {
-      const ctrl = animate(angle, 79, { duration: 1.8, ease: ease.entrance, delay: 0.2 });
-      return () => {
-        unsub();
-        ctrl.stop();
-      };
-    }
-    return unsub;
-  }, [on, reduce, angle]);
-  return (
-    <g ref={ref}>
-      <line x1={140} y1={150} x2={140} y2={62} stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
-    </g>
   );
 }

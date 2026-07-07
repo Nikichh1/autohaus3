@@ -9,7 +9,6 @@ import { HouseScene } from "@/components/home/HouseScene";
 import { FinaleScene } from "@/components/home/FinaleScene";
 import { MobileStickyCTA } from "@/components/home/MobileStickyCTA";
 import { ChapterRail } from "@/components/fx/ChapterRail";
-import { EngineRumble } from "@/components/fx/EngineRumble";
 import { getFeaturedVehicles, getAllPublicVehicles } from "@/lib/data/vehicles";
 import { getContent } from "@/lib/cms/read";
 
@@ -101,7 +100,6 @@ export default async function HomePage() {
         }}
       />
       <MobileStickyCTA />
-      <EngineRumble />
     </div>
   );
 }

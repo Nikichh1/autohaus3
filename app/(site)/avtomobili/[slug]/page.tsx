@@ -11,6 +11,8 @@ import { fuelLabels, transmissionLabels, drivetrainLabels } from "@/lib/labels";
 import { contactInfo } from "@/lib/nav";
 import { CinematicHero } from "@/components/vehicle/CinematicHero";
 import { ProductLoader } from "@/components/vehicle/ProductLoader";
+import { DynamicsBand } from "@/components/vehicle/DynamicsBand";
+import { SectionNav } from "@/components/vehicle/SectionNav";
 import { VehicleCollage } from "@/components/vehicle/VehicleCollage";
 import { VelocityMarquee } from "@/components/motion/VelocityMarquee";
 import { Parallax } from "@/components/motion/Parallax";
@@ -22,8 +24,8 @@ import { VehicleStickyBar } from "@/components/vehicle/VehicleStickyBar";
 import { SimilarVehicles } from "@/components/vehicle/SimilarVehicles";
 import { TrackView } from "@/components/vehicle/TrackView";
 import { FadeIn } from "@/components/motion/FadeIn";
-import { StatCounter } from "@/components/motion/StatCounter";
 import { BlurImage } from "@/components/motion/BlurImage";
+import { Lightbox } from "@/components/vehicle/gallery/Lightbox";
 
 // Statically generated per vehicle, refreshed on admin edits via revalidatePath
 // (see lib/admin/vehicle-actions.ts) + an hourly ISR safety net. New/unknown
@@ -171,25 +173,18 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   const coll = collections.find((c) => c.slug === vehicle.collection);
 
   const detailImg = vehicle.images[1] ?? vehicle.images[0];
-  const immersiveImg = vehicle.images[Math.min(2, vehicle.images.length - 1)] ?? vehicle.images[0];
   const ctaImg = vehicle.images[0];
 
-  // Numeric stats animate (count-up); text stats render in the same titanium type.
-  // Drawing on both keeps the row stack full even for cars with sparse specs.
-  type PerfRow = { label: string; sub: string; to?: number; dec?: number; unit?: string; text?: string };
-  const perfRows = (
+  // Compact spec set surfaced in the immersive gallery's decision rail — the
+  // numbers a buyer weighs while inspecting the photos.
+  const gallerySpecs = (
     [
-      vehicle.power ? { to: vehicle.power, dec: 0, unit: "к.с.", label: "Максимална мощност", sub: vehicle.engineCC ? `${formatNumber(vehicle.engineCC)} см³` : fuelLabels[vehicle.fuelType] } : null,
-      vehicle.torque ? { to: vehicle.torque, dec: 0, unit: "Nm", label: "Въртящ момент", sub: "пикова стойност" } : null,
-      vehicle.acceleration ? { to: vehicle.acceleration, dec: 1, unit: "сек", label: "Ускорение 0–100 км/ч", sub: transmissionLabels[vehicle.transmission] } : null,
-      vehicle.topSpeed ? { to: vehicle.topSpeed, dec: 0, unit: "км/ч", label: "Максимална скорост", sub: "електронно ограничена" } : null,
-      vehicle.engineCC ? { to: vehicle.engineCC, dec: 0, unit: "см³", label: "Работен обем", sub: "двигател" } : null,
-      vehicle.mileage ? { to: vehicle.mileage, dec: 0, unit: "км", label: "Заверен пробег", sub: vehicle.exteriorColor || "проверен" } : null,
-      { text: transmissionLabels[vehicle.transmission], label: "Трансмисия", sub: drivetrainLabels[vehicle.drivetrain] },
-      { text: fuelLabels[vehicle.fuelType], label: "Гориво", sub: vehicle.bodyType || `${vehicle.year} г.` },
-      vehicle.seats ? { text: `${vehicle.seats}`, label: "Места", sub: vehicle.doors ? `${vehicle.doors} врати` : "седалки" } : null,
-    ].filter(Boolean) as PerfRow[]
-  ).slice(0, 6);
+      vehicle.power ? { label: "Мощност", value: `${vehicle.power} к.с.` } : null,
+      vehicle.acceleration ? { label: "0–100", value: `${vehicle.acceleration} с` } : null,
+      { label: "Година", value: String(vehicle.year) },
+      { label: "Пробег", value: `${formatNumber(vehicle.mileage)} км` },
+    ].filter(Boolean) as { label: string; value: string }[]
+  );
 
   const marqueeText = [
     `${vehicle.power} К.С.`,
@@ -223,51 +218,15 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         <VelocityMarquee text={marqueeText} baseVelocity={-2.2} separator="◦" className="text-sm font-bold uppercase tracking-[0.12em]" />
       </div>
 
-      {/* 2 · PERFORMANCE — stat rows */}
-      <section className="vd-dark relative overflow-hidden px-6 py-[clamp(90px,13vh,170px)] md:px-8" style={{ background: "radial-gradient(120% 90% at 50% 0%,#181c23 0%,#101319 52%,#0b0d12 100%)" }}>
-        <div className="relative mx-auto max-w-[1320px]">
-          <div className="mb-[clamp(40px,6vh,72px)] flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 02 — Перформанс ]</p>
-              {/* text-fg re-resolves INSIDE .vd-dark — without it these mega
-                  headings inherit the cream theme's near-black from the page
-                  root and vanish against the dark islands. */}
-              <h2 className="font-mega text-[clamp(38px,5.6vw,86px)] leading-[0.94] text-fg"><SplitText text={"Числата разказват\nсамо началото"} /></h2>
-            </div>
-            <p className="max-w-[280px] text-[13.5px] leading-relaxed text-fg-muted">Заводски стойности — мощност, динамика и характер на този автомобил.</p>
-          </div>
-          <div>
-            {perfRows.map((r, i) => (
-              <FadeIn key={r.label}>
-                <div className={`flex items-center justify-between gap-6 border-t border-line py-[clamp(18px,3vh,34px)] ${i === perfRows.length - 1 ? "border-b" : ""}`}>
-                  <div className="flex items-baseline gap-4 md:gap-[18px]">
-                    <span className="text-xs font-semibold text-accent">{String(i + 1).padStart(2, "0")}</span>
-                    <div>
-                      <p className="font-mega text-[clamp(15px,1.6vw,20px)] leading-none text-fg">{r.label}</p>
-                      <p className="mt-1.5 text-xs text-fg-subtle">{r.sub}</p>
-                    </div>
-                  </div>
-                  {typeof r.to === "number" ? (
-                    <p className="flex items-baseline gap-2">
-                      <StatCounter to={r.to} decimals={r.dec ?? 0} className="text-titanium-num font-mega text-[clamp(40px,7vw,100px)] leading-none tabular-nums" />
-                      <span className="text-[clamp(13px,1.4vw,17px)] font-medium text-[#8e959d]">{r.unit}</span>
-                    </p>
-                  ) : (
-                    <p className="text-titanium-num font-mega text-right text-[clamp(22px,3.4vw,46px)] leading-none">{r.text}</p>
-                  )}
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 1 · DYNAMICS — the figures as machined, spun-up capsules */}
+      <DynamicsBand vehicle={vehicle} />
 
-      {/* 3 · FINANCING */}
+      {/* 2 · FINANCING */}
       {vehicle.price > 0 && (
-        <section id="financing" className="vd-dark relative scroll-mt-20 overflow-hidden px-6 py-[clamp(80px,11vh,150px)] md:px-8" style={{ background: "radial-gradient(120% 90% at 50% 0%,#181c23 0%,#101319 55%,#0b0d12 100%)" }}>
+        <section id="financing" data-section="financing" data-section-label="Финансиране" className="vd-dark relative scroll-mt-20 overflow-hidden px-6 py-[clamp(80px,11vh,150px)] md:px-8" style={{ background: "radial-gradient(120% 90% at 50% 0%,#181c23 0%,#101319 55%,#0b0d12 100%)" }}>
           <div className="mx-auto max-w-[1180px]">
             <div className="mb-[clamp(36px,5vh,56px)] text-center">
-              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 03 — Финансиране ]</p>
+              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 02 — Финансиране ]</p>
               <h2 className="font-mega text-[clamp(34px,4.8vw,74px)] leading-[0.94] text-fg"><SplitText text={"Притежавайте я при\nсвои условия"} /></h2>
             </div>
             <FadeIn>
@@ -277,11 +236,11 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* 4 · SPEC + EQUIPMENT (cream) */}
-      <section id="equipment" className="relative scroll-mt-20 overflow-hidden bg-base px-6 py-[clamp(90px,13vh,160px)] text-fg md:px-8">
+      {/* 3 · SPEC + EQUIPMENT (cream) */}
+      <section id="equipment" data-section="specs" data-section-label="Данни" className="relative scroll-mt-20 overflow-hidden bg-base px-6 py-[clamp(90px,13vh,160px)] text-fg md:px-8">
         <div className="mx-auto max-w-[1320px]">
           <div className="mb-[clamp(40px,6vh,68px)]">
-            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-subtle">[ 04 — Технически данни ]</p>
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-subtle">[ 03 — Технически данни ]</p>
             <h2 className="font-mega text-[clamp(38px,5.6vw,86px)] leading-[0.94] text-fg"><SplitText text={"Всеки детайл,\nдокументиран"} /></h2>
           </div>
           <div className={`grid grid-cols-1 gap-[clamp(40px,5vw,72px)] ${highlights.length > 0 ? "md:grid-cols-2" : ""}`}>
@@ -307,20 +266,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* 5 · IMMERSIVE full-bleed */}
-      <section className="vd-dark relative h-[92vh] min-h-[520px] overflow-hidden bg-[#0a0c10]">
-        <Parallax distance={90} className="absolute inset-x-0 inset-y-[-12%]">
-          <BlurImage src={immersiveImg} alt={`${fullLabel} — присъствие`} fill sizes="100vw" className="object-cover object-[center_42%]" />
-        </Parallax>
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0a0c10]/55 via-[#0a0c10]/10 to-[#0a0c10]/85" />
-        <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-8 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">[ 05 ] Присъствие</p>
-          <h2 className="mt-5 max-w-[16ch] font-mega text-[clamp(40px,8.4vw,132px)] leading-[0.9] text-fg [text-shadow:0_8px_50px_rgba(0,0,0,.5)]"><SplitText text="Създадена да доминира пътя" /></h2>
-        </div>
-        <div aria-hidden className="absolute bottom-6 left-6 z-[3] text-[10.5px] font-semibold uppercase tracking-[0.16em] text-fg-muted md:left-8">F: 1/640 · ISO 200 · 35MM</div>
-      </section>
-
-      {/* 6 · EDITORIAL DETAIL */}
+      {/* 4 · EDITORIAL DETAIL */}
       <section className="vd-dark relative overflow-hidden bg-[#0a0c10] px-6 py-[clamp(80px,11vh,150px)] md:px-8">
         <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-[clamp(36px,5vw,64px)] md:grid-cols-2">
           <div className="vd-cut relative aspect-[16/11] overflow-hidden border border-line shadow-[0_50px_110px_-54px_rgba(0,0,0,0.9)]">
@@ -330,7 +276,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             <span className="absolute bottom-4 left-4 z-10 font-mega text-[10.5px] tracking-[0.16em] text-accent">{vehicle.exteriorColor || "ДЕТАЙЛ"} · ДЕТАЙЛ</span>
           </div>
           <div>
-            <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 06 — Произход ]</p>
+            <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 04 — Произход ]</p>
             <h2 className="font-mega text-[clamp(32px,4.6vw,64px)] leading-[0.96] text-fg"><SplitText text={"Историята е\nчаст от стойността"} /></h2>
             <p className="mt-6 max-w-[460px] text-[clamp(15px,1.5vw,18px)] leading-relaxed text-fg/75">
               Всеки автомобил преминава щателна проверка, преди да достигне шоурума — пълна документация и ясна история. Купувате с увереност, а не с надежда.
@@ -347,8 +293,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* 7 · GALLERY collage (cream) */}
-      <section className="relative overflow-hidden bg-base px-6 py-[clamp(70px,10vh,130px)] text-fg md:px-8">
+      {/* 5 · GALLERY collage (cream) — every frame opens the immersive viewer */}
+      <section id="gallery" data-section="gallery" data-section-label="Галерия" className="relative scroll-mt-20 overflow-hidden bg-base px-6 py-[clamp(70px,10vh,130px)] text-fg md:px-8">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-10 z-0 flex justify-center overflow-hidden">
           <Parallax distance={50}>
             <span className="text-stroke block whitespace-nowrap font-mega text-[clamp(90px,18vw,250px)] leading-none">Колекция</span>
@@ -357,20 +303,19 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         <div className="relative z-10 mx-auto max-w-[1320px]">
           <div className="mb-[clamp(34px,5vh,56px)] flex flex-wrap items-end justify-between gap-5">
             <div>
-              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-subtle">[ 07 — Галерия ]</p>
+              <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-subtle">[ 05 — Галерия ]</p>
               <h2 className="font-mega text-[clamp(38px,5.6vw,86px)] leading-[0.94] text-fg"><SplitText text="В движение" /></h2>
             </div>
-            {/* The hint matches the gesture: phones swipe a film strip,
-                larger screens scroll the parallax masonry. */}
-            <p className="hidden max-w-[264px] text-[13px] leading-relaxed text-fg-muted sm:block">Скролвайте — всеки кадър се движи със собствен ритъм.</p>
-            <p className="max-w-[264px] text-[13px] leading-relaxed text-fg-muted sm:hidden">Плъзнете настрани — кадър по кадър.</p>
+            {/* The hint matches the gesture: tap any frame to inspect it. */}
+            <p className="hidden max-w-[264px] text-[13px] leading-relaxed text-fg-muted sm:block">Докоснете кадър, за да го отворите и разгледате в детайл.</p>
+            <p className="max-w-[264px] text-[13px] leading-relaxed text-fg-muted sm:hidden">Плъзнете настрани — докоснете за детайл.</p>
           </div>
           <VehicleCollage images={vehicle.images} alt={fullLabel} />
         </div>
       </section>
 
-      {/* 8 · CTA — inquiry on a notched dark panel */}
-      <section id="inquiry" className="relative scroll-mt-0 overflow-hidden px-5 py-[clamp(70px,9vh,120px)] md:px-8" style={{ background: "linear-gradient(180deg,#efeee6 0%,#dfe1de 100%)" }}>
+      {/* 6 · CTA — inquiry on a notched dark panel */}
+      <section id="inquiry" data-section="inquiry" data-section-label="Запитване" className="relative scroll-mt-0 overflow-hidden px-5 py-[clamp(70px,9vh,120px)] md:px-8" style={{ background: "linear-gradient(180deg,#efeee6 0%,#dfe1de 100%)" }}>
         <div className="vd-dark vd-cut-both relative mx-auto max-w-[1180px] overflow-hidden bg-[#0a0c10] shadow-[0_50px_120px_-50px_rgba(20,24,30,0.6)]">
           <Parallax distance={70} className="absolute inset-x-0 inset-y-[-12%]">
             <BlurImage src={ctaImg} alt="" fill sizes="100vw" className="object-cover object-[center_42%]" />
@@ -378,7 +323,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           <div aria-hidden className="absolute inset-0" style={{ background: "radial-gradient(90% 70% at 50% 0%,rgba(201,207,214,.14),transparent 55%),linear-gradient(180deg,rgba(10,12,16,.6),rgba(10,12,16,.85) 55%,rgba(10,12,16,.96))" }} />
           <div className="relative z-[3] px-[clamp(24px,5vw,72px)] py-[clamp(40px,7vw,84px)]">
             <div className="mx-auto max-w-[760px] text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">[ 08 ] AutoHaus · Пловдив</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">[ 06 ] AutoHaus · Пловдив</p>
               <h2 className="mt-4 font-mega text-[clamp(44px,7.4vw,116px)] leading-[0.9] text-fg"><SplitText text="Заповядайте на оглед" /></h2>
               <p className="mx-auto mt-5 max-w-[480px] text-[15px] leading-relaxed text-fg/80">
                 Оставете данните си или ни се обадете — ще подготвим автомобила за вашето посещение.
@@ -394,15 +339,21 @@ export default async function VehicleDetailPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* 9 · SIMILAR */}
+      {/* 7 · SIMILAR */}
       {similar.length > 0 && (
         <section className="vd-dark relative overflow-hidden border-t border-line bg-[#0a0c10] px-6 py-[clamp(70px,9vh,120px)] md:px-8">
           <div className="mx-auto max-w-[1320px]">
-            <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 09 — Колекцията продължава ]</p>
+            <p className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">[ 07 — Колекцията продължава ]</p>
             <SimilarVehicles vehicles={similar} />
           </div>
         </section>
       )}
+
+      {/* Shared immersive gallery — opened by the hero stage and the collage */}
+      <Lightbox images={vehicle.images} alt={fullLabel} specs={gallerySpecs} title={fullLabel} bookHref="#inquiry" />
+
+      {/* Right-edge scroll-spy — jump anywhere in the story (desktop) */}
+      <SectionNav />
 
       <VehicleStickyBar vehicle={vehicle} phone={phone} />
     </article>

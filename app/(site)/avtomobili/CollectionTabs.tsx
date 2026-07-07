@@ -76,7 +76,7 @@ export function CollectionTabs({ active, counts, total, onSelect }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 max-w-2xl text-sm leading-relaxed text-fg-muted md:text-base"
+            className="mt-6 max-w-2xl text-sm leading-relaxed text-fg-muted md:text-[16px]"
           >
             <span className="font-display font-semibold text-fg">
               {activeMeta.tagline}{" "}

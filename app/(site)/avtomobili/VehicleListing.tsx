@@ -403,7 +403,7 @@ function ActiveFilterPills({
           className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-accent hover:text-accent max-md:min-h-9 max-md:px-3.5"
         >
           {p.label}
-          <span className="text-base leading-none">×</span>
+          <span className="text-[16px] leading-none">×</span>
         </button>
       ))}
       <button

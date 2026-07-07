@@ -3,17 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   motion,
-  animate,
   useTransform,
   useAnimationFrame,
   useMotionValue,
-  useSpring,
-  useInView,
   useReducedMotion,
   type MotionValue,
 } from "framer-motion";
-import { ButtonLink } from "@/components/ui/Button";
-import { Magnetic } from "@/components/fx/Magnetic";
 import { CinematicGrade } from "@/components/fx/CinematicGrade";
 
 /**
@@ -56,8 +51,6 @@ export function MachineScene() {
   const scanOpacity = useTransform(progress, [0.06, 0.16, 0.88, 1], [0, 0.7, 0.7, 0]);
   const subOpacity = useTransform(progress, [0.46, 0.56], [0, 1]);
   const subY = useTransform(progress, [0.46, 0.56], [26, 0]);
-  const ctaOpacity = useTransform(progress, [0.58, 0.68], [0, 1]);
-  const ctaY = useTransform(progress, [0.58, 0.68], [26, 0]);
   const hudOpacity = useTransform(progress, [0.05, 0.15], [0, 1]);
   // The film itself breathes with the scroll — a slow push-in.
   const filmScale = useTransform(progress, [0, 1], [1.09, 1]);
@@ -233,7 +226,8 @@ export function MachineScene() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-base via-base/35 to-transparent" />
 
         {/* ── Left content rail — 40% of the frame held dark (the film runs in
-            the remaining 60%); the existing gradient melts the seam ── */}
+            the remaining 60%). Structured top → middle → bottom: chapter mark,
+            the statement, and the three qualities that define the machine. ── */}
         <div className="absolute inset-y-0 left-0 z-10 hidden w-[40%] flex-col justify-between border-r border-line bg-gradient-to-r from-base via-base/90 to-transparent px-10 py-24 lg:flex xl:px-14">
           <motion.p style={{ opacity: hudOpacity }} className="label-fine flex items-center gap-3 text-fg/80">
             <span aria-hidden className="text-accent">[</span>
@@ -251,25 +245,14 @@ export function MachineScene() {
             </h2>
             <motion.p
               style={reduce ? undefined : { opacity: subOpacity, y: subY }}
-              className="mt-5 max-w-[30ch] text-sm leading-relaxed text-fg/70 xl:text-base"
+              className="mt-5 max-w-[32ch] text-sm leading-relaxed text-fg/70 xl:text-[16px]"
             >
               Силует, мощност и баланс в перфектна хармония — усещате я още преди
               да запалите двигателя.
             </motion.p>
           </div>
 
-          {/* Shift-through-the-gears instrument — scrolling revs the tach;
-              hit the redline and the box shifts up. */}
-          <motion.div style={{ opacity: hudOpacity }}>
-            <MTach progress={progress} />
-            <div className="mt-8">
-              <Magnetic strength={0.14}>
-                <ButtonLink href="/avtomobili" variant="solid" size="md" arrow>
-                  Изберете вашата
-                </ButtonLink>
-              </Magnetic>
-            </div>
-          </motion.div>
+          <Pillars progress={progress} reduce={!!reduce} />
         </div>
 
         {/* scan line — sweeps the film side only */}
@@ -280,33 +263,6 @@ export function MachineScene() {
             className="absolute left-[8%] right-[8%] z-10 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent lg:left-[45%] lg:right-[6%]"
           />
         )}
-
-        {/* ── Mobile composition: the title lands across the frame ── */}
-        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-5 pb-[13vh] text-center lg:hidden">
-          <MiniCluster progress={progress} />
-          <h2 className="flex flex-wrap justify-center gap-x-[0.26em] font-display text-[clamp(1.9rem,7.5vw,3.4rem)] font-extrabold leading-[1] tracking-[-0.03em] text-fg">
-            {TITLE.map(([word, [a, b]]) => (
-              <TitleWord key={word} word={word} range={[a, b]} progress={progress} reduce={!!reduce} />
-            ))}
-          </h2>
-          <motion.p
-            style={reduce ? undefined : { opacity: subOpacity, y: subY }}
-            className="mt-5 max-w-md text-sm text-fg/75 md:text-base"
-          >
-            Силует, мощност и баланс в перфектна хармония — усещате я още преди
-            да запалите двигателя.
-          </motion.p>
-          <motion.div
-            style={reduce ? undefined : { opacity: ctaOpacity, y: ctaY }}
-            className="pointer-events-auto mt-8"
-          >
-            <Magnetic strength={0.14}>
-              <ButtonLink href="/avtomobili" variant="solid" size="lg" arrow>
-                Изберете вашата
-              </ButtonLink>
-            </Magnetic>
-          </motion.div>
-        </div>
 
         {/* loading shimmer */}
         {!ready && near && (
@@ -349,210 +305,82 @@ function TitleWord({
   );
 }
 
-/* ── The M-Tach — shift through the gears with your scroll ──
-   The scroll is divided into six gear windows: within each, the needle sweeps
-   toward the redline and the shift LEDs walk titanium → amber → red; crest the
-   window and the box snaps up a gear while the revs drop back. Speed numbers
-   are for passengers — a rev counter with shift lights is the driver's story.
-   The tricolour stripes are the quiet nod enthusiasts will catch. */
+/* ── The three qualities — silhouette, power, balance. The scene's emotional
+   signature, drawn as a calm engineered triad instead of an instrument
+   cluster: an index, a word, a line. Each resolves in turn as the car is
+   revealed by the scroll. */
 
-const REDLINE = 7200;
-const RPM_IDLE = 1400;
-const RPM_MAX = 8000;
+const PILLARS: [string, string][] = [
+  ["Силует", "Форма, родена от вятъра."],
+  ["Мощност", "Характер, който усещате."],
+  ["Баланс", "Контрол във всеки завой."],
+];
 
-function gearT(p: number) {
-  const g = Math.min(5.999, Math.max(0, p * 6));
-  return { gear: Math.floor(g) + 1, t: g % 1 };
-}
-
-const rad = (deg: number) => (deg * Math.PI) / 180;
-/** Point on the dial: 0° = 12 o'clock, sweep −120°…+120°. */
-function dialPoint(r: number, deg: number): [number, number] {
-  return [100 + r * Math.sin(rad(deg)), 104 - r * Math.cos(rad(deg))];
-}
-const rpmDeg = (rpm: number) => -120 + (rpm / RPM_MAX) * 240;
-
-function MTach({ progress }: { progress: MotionValue<number> }) {
-  const rpmRaw = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
-  // Needle physics — mass, stiffness and damping like a real stepper gauge:
-  // sweeps track the scroll smoothly and the gear-shift drop becomes a fast
-  // physical fall with a hint of settle, never a teleport.
-  const rpmSpring = useSpring(rpmRaw, { stiffness: 160, damping: 19, mass: 0.55 });
-
-  // Ignition sweep — the needle's full sweep-and-return when the cluster first
-  // wakes, exactly like an M car on startup. The detail enthusiasts wait for.
-  const dialRef = useRef<HTMLDivElement>(null);
-  const ignited = useInView(dialRef, { once: true, amount: 0.6 });
-  const sweepMV = useMotionValue(0);
-  useEffect(() => {
-    if (!ignited) return;
-    let cancelled = false;
-    (async () => {
-      await animate(sweepMV, RPM_MAX, { duration: 0.65, ease: [0.3, 0, 0.15, 1] });
-      if (!cancelled) await animate(sweepMV, 0, { duration: 1.0, ease: [0.16, 1, 0.3, 1] });
-    })();
-    return () => {
-      cancelled = true;
-      sweepMV.stop();
-    };
-  }, [ignited, sweepMV]);
-
-  // The gauge shows whichever is higher: the sprung scroll-revs or the sweep.
-  const rpm = useTransform([rpmSpring, sweepMV], ([a, b]: number[]) => Math.max(a, b));
-  const needle = useTransform(rpm, (v) => rpmDeg(v));
-  const gearNum = useTransform(progress, (p) => String(gearT(p).gear));
-  const rpmText = useTransform(rpm, (v) => (v / 1000).toFixed(1));
-
-  const [ax, ay] = dialPoint(80, -120);
-  const [bx, by] = dialPoint(80, 120);
-  const [rx1, ry1] = dialPoint(80, rpmDeg(7000));
-  const [rx2, ry2] = dialPoint(80, rpmDeg(RPM_MAX));
-
+/** Desktop: the triad reveals with the scroll (progress-driven stagger). */
+function Pillars({ progress, reduce }: { progress: MotionValue<number>; reduce: boolean }) {
   return (
-    <div className="flex items-end gap-7">
-      {/* dial */}
-      <div ref={dialRef} className="relative w-[170px] shrink-0 xl:w-[200px]">
-        <svg viewBox="0 0 200 118" fill="none" aria-hidden className="w-full text-accent">
-          {/* track + redline zone */}
-          <path d={`M ${ax} ${ay} A 80 80 0 1 1 ${bx} ${by}`} stroke="rgb(245 247 249 / 0.16)" strokeWidth={3} />
-          <path d={`M ${rx1} ${ry1} A 80 80 0 0 1 ${rx2} ${ry2}`} stroke="#e7222e" strokeWidth={4} strokeOpacity={0.85} />
-          {/* ticks + numerals, per 1000 rpm */}
-          {Array.from({ length: 9 }, (_, k) => {
-            const d = rpmDeg(k * 1000);
-            const [x1, y1] = dialPoint(80, d);
-            const [x2, y2] = dialPoint(70, d);
-            const [nx, ny] = dialPoint(58, d);
-            return (
-              <g key={k}>
-                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={k >= 7 ? "#e7222e" : "currentColor"} strokeOpacity={k >= 7 ? 0.9 : 0.5} strokeWidth={1.5} />
-                <text x={nx} y={ny + 3} textAnchor="middle" className="fill-current" style={{ fontSize: 9, opacity: 0.65 }}>
-                  {k}
-                </text>
-              </g>
-            );
-          })}
-          {/* needle — native SVG rotation about the exact hub point (CSS
-              transform-origin on SVG groups is unreliable across engines) */}
-          <Needle angle={needle} />
-          <circle cx={100} cy={104} r={5.5} fill="#14171c" stroke="currentColor" strokeOpacity={0.6} />
-        </svg>
-        <p className="pointer-events-none absolute inset-x-0 bottom-0 text-center">
-          <motion.span className="font-display text-sm font-bold tabular-nums text-fg">{rpmText}</motion.span>
-          <span className="label-fine ml-1.5 text-fg-subtle">×1000 об/мин</span>
-        </p>
-      </div>
-
-      {/* shift lights + gear box */}
-      <div className="min-w-0 pb-1">
-        <div className="mb-3.5 flex items-center gap-1.5">
-          {Array.from({ length: 8 }, (_, i) => (
-            <ShiftLed key={i} index={i} rpm={rpm} />
-          ))}
-        </div>
-        <div className="flex items-baseline gap-3">
-          <motion.span className="font-display text-6xl font-extrabold leading-none tabular-nums text-fg xl:text-7xl">
-            {gearNum}
-          </motion.span>
-          <span className="label-fine text-fg-muted">предавка</span>
-        </div>
-        {/* the tricolour — the enthusiast's handshake */}
-        <div aria-hidden className="mt-4 flex gap-1">
-          <span className="h-1 w-7 -skew-x-[24deg] rounded-[1px] bg-[#81c4ff]" />
-          <span className="h-1 w-7 -skew-x-[24deg] rounded-[1px] bg-[#16588e]" />
-          <span className="h-1 w-7 -skew-x-[24deg] rounded-[1px] bg-[#e7222e]" />
-        </div>
-      </div>
+    <div className="grid grid-cols-3 gap-x-4 border-t border-line pt-6">
+      {PILLARS.map(([title, sub], i) => (
+        <Pillar key={title} index={i} title={title} sub={sub} progress={progress} reduce={reduce} />
+      ))}
     </div>
   );
 }
 
-/** One shift light — follows the *sprung* revs (so it walks with the needle,
- *  including the ignition sweep); everything lights at the redline flash. */
-function ShiftLed({ index, rpm }: { index: number; rpm: MotionValue<number> }) {
-  const color = index >= 6 ? "#e7222e" : index >= 4 ? "#f0b429" : "#c9cfd6";
-  const on = useTransform(rpm, (v) => {
-    if (v >= 7050) return 1; // redline — full strip
-    const t = (v - RPM_IDLE) / (REDLINE - RPM_IDLE);
-    return t * 8 >= index + 0.5 ? 1 : 0.16;
-  });
+function Pillar({
+  index,
+  title,
+  sub,
+  progress,
+  reduce,
+}: {
+  index: number;
+  title: string;
+  sub: string;
+  progress: MotionValue<number>;
+  reduce: boolean;
+}) {
+  const a = 0.5 + index * 0.05;
+  const opacity = useTransform(progress, [a, a + 0.12], [0, 1]);
+  const y = useTransform(progress, [a, a + 0.12], [18, 0]);
   return (
-    <motion.span
-      style={{ opacity: on, background: color, boxShadow: `0 0 8px ${color}66` }}
-      className="h-1.5 w-4 rounded-[2px]"
-    />
+    <motion.div style={reduce ? undefined : { opacity, y }}>
+      <span className="label-fine text-accent">0{index + 1}</span>
+      <p className="mt-2 font-display text-lg font-bold tracking-tight text-fg xl:text-xl">{title}</p>
+      <p className="mt-1.5 text-xs leading-relaxed text-fg/55">{sub}</p>
+    </motion.div>
   );
 }
 
-/** Needle group rotated via the SVG transform attribute — pivot locked to the
- *  hub (100,104), immune to CSS transform-origin quirks on SVG. */
-function Needle({ angle }: { angle: MotionValue<number> }) {
-  const ref = useRef<SVGGElement>(null);
-  useEffect(() => {
-    const apply = (v: number) =>
-      ref.current?.setAttribute("transform", `rotate(${v} 100 104)`);
-    apply(angle.get());
-    return angle.on("change", apply);
-  }, [angle]);
+/** Mobile / static: the same triad, revealed once as the section enters. */
+function PillarsStatic() {
   return (
-    <g ref={ref}>
-      <line x1={100} y1={104} x2={100} y2={30} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" />
-      <line x1={100} y1={104} x2={100} y2={116} stroke="#e7222e" strokeWidth={2.5} strokeLinecap="round" strokeOpacity={0.5} />
-    </g>
-  );
-}
-
-/** Compact shift cluster for phones — the same living gearbox (LEDs, gear,
- *  sprung revs) so mobile keeps the scene's signature, in one slim row. */
-function MiniCluster({ progress }: { progress: MotionValue<number> }) {
-  const rpmRaw = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
-  const rpm = useSpring(rpmRaw, { stiffness: 160, damping: 19, mass: 0.55 });
-  const gearNum = useTransform(progress, (p) => String(gearT(p).gear));
-  const rpmText = useTransform(rpm, (v) => (v / 1000).toFixed(1));
-  return (
-    <div className="mb-5 flex items-center gap-4 rounded-full border border-line bg-base/40 px-4 py-2.5 backdrop-blur-md">
-      <span className="flex items-center gap-1">
-        {Array.from({ length: 8 }, (_, i) => (
-          <ShiftLed key={i} index={i} rpm={rpm} />
-        ))}
-      </span>
-      <span className="flex items-baseline gap-1.5">
-        <motion.span className="font-display text-xl font-extrabold leading-none tabular-nums text-fg">
-          {gearNum}
-        </motion.span>
-        <span className="label-fine text-fg-muted">пр.</span>
-      </span>
-      <span className="flex items-baseline gap-1">
-        <motion.span className="font-display text-sm font-bold tabular-nums text-fg/80">
-          {rpmText}
-        </motion.span>
-        <span className="label-fine text-fg-subtle">×1000</span>
-      </span>
+    <div className="mt-9 grid w-full max-w-md grid-cols-3 gap-x-3 border-t border-line pt-6 text-left">
+      {PILLARS.map(([title, sub], i) => (
+        <motion.div
+          key={title}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <span className="label-fine text-accent">0{i + 1}</span>
+          <p className="mt-1.5 font-display text-base font-bold tracking-tight text-fg">{title}</p>
+          <p className="mt-1 text-[11px] leading-relaxed text-fg/55">{sub}</p>
+        </motion.div>
+      ))}
     </div>
   );
 }
 
 /**
- * The mobile Machine — purpose-built: one cinematic still with the engine
- * idling in the cluster (revs breathing around 1.5k, gear 1, first light
- * flickering). No pin, no canvas, no frame downloads — instant and fluid,
- * while keeping the scene's living-gearbox signature.
+ * The mobile Machine — purpose-built: one cinematic still of the car settling
+ * out of the dark, the statement, and the three qualities that define it. No
+ * pin, no canvas, no frame downloads — instant and fluid on any phone.
  */
 function MobileMachine({ chapter = true }: { chapter?: boolean }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
-  // The idle loop runs ONLY while the scene is near the viewport — an
-  // infinite rAF animation must never tick under the rest of the page.
-  const onScreen = useInView(ref, { margin: "25% 0px 25% 0px" });
-  const idle = useMotionValue(0.004);
-  useEffect(() => {
-    if (reduce || !onScreen) return;
-    const ctrl = animate(idle, [0.004, 0.016, 0.006, 0.014, 0.004], {
-      duration: 5.4,
-      repeat: Infinity,
-      ease: "easeInOut",
-    });
-    return () => ctrl.stop();
-  }, [idle, reduce, onScreen]);
 
   return (
     <section
@@ -584,7 +412,6 @@ function MobileMachine({ chapter = true }: { chapter?: boolean }) {
             03 · Машината
             <span aria-hidden className="ml-2 text-accent">]</span>
           </p>
-          <MiniCluster progress={idle} />
           <h2 className="font-display text-[clamp(1.9rem,7.5vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-fg">
             Създадени за движение.
           </h2>
@@ -592,11 +419,7 @@ function MobileMachine({ chapter = true }: { chapter?: boolean }) {
             Силует, мощност и баланс в перфектна хармония — усещате я още преди
             да запалите двигателя.
           </p>
-          <div className="mt-7">
-            <ButtonLink href="/avtomobili" variant="solid" size="lg" arrow>
-              Изберете вашата
-            </ButtonLink>
-          </div>
+          <PillarsStatic />
         </div>
       </div>
     </section>

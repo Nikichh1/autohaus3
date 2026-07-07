@@ -91,7 +91,7 @@ export function AdminShell({
       onClick={() => setMobileOpen(false)}
     >
       <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-fg text-ink">
-        <span className="font-display text-base font-extrabold">A</span>
+        <span className="font-display text-[16px] font-extrabold">A</span>
       </span>
       {!collapsed && (
         <span className="font-display text-base font-bold tracking-tight text-fg">AutoHaus</span>

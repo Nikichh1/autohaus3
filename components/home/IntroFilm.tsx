@@ -96,11 +96,6 @@ export function IntroFilm({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy } = 
   const leftScrim = useTransform(progress, [0, 0.28], [1, 0]);
   const cover = useTransform(progress, [0.9, 1], [0, 1]);
   const hint = useTransform(progress, [0, 0.06], [1, 0]);
-  // Film HUD: running timecode (24 fps grammar) + reel progress.
-  const timecode = useTransform(progress, (p) => {
-    const t = p * (FRAME_COUNT / 24);
-    return `00:0${Math.floor(t)}:${String(Math.floor((t % 1) * 24)).padStart(2, "0")}`;
-  });
   // Pointer parallax — the beats hang in the space of the footage.
   const px = useMotionValue(0);
   const py = useMotionValue(0);
@@ -323,11 +318,7 @@ export function IntroFilm({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy } = 
           transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           className="absolute inset-x-0 bottom-0 z-20 h-[6svh] origin-bottom bg-black md:h-[7svh]"
         />
-        {/* film HUD riding the bottom bar: reel label · timecode · progress */}
-        <div className="absolute inset-x-0 bottom-0 z-30 flex h-[6svh] items-center justify-center gap-6 px-5 md:h-[7svh] md:justify-start md:px-10">
-          <span className="label-fine text-white/45">Reel 01 · AutoHaus</span>
-          <motion.span className="label-fine tabular-nums text-white/60">{timecode}</motion.span>
-        </div>
+        {/* thin scroll-progress line along the bottom letterbox bar */}
         <motion.div
           aria-hidden
           style={{ scaleX: progress }}
@@ -688,11 +679,6 @@ function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
           <span className="vd-scrollcue block h-6 w-px bg-white/60" />
         </motion.p>
       </div>
-
-      {/* reel label — brand continuity with the desktop film */}
-      <span className="label-fine absolute bottom-[1.1svh] left-5 z-20 text-white/40">
-        Reel 01 · AutoHaus
-      </span>
     </section>
   );
 }

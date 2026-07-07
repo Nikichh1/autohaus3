@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ScrollProgress } from "@/components/fx/ScrollProgress";
 import { Grain } from "@/components/fx/Grain";
 import { Cursor } from "@/components/fx/Cursor";
+import { SoundSystem } from "@/components/fx/SoundSystem";
 import { TrackPageView } from "@/components/fx/TrackPageView";
 
 /**
@@ -33,6 +34,7 @@ export default function SiteLayout({
       </SmoothScroll>
       <Grain />
       <Cursor />
+      <SoundSystem />
       <TrackPageView />
     </>
   );

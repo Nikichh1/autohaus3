@@ -87,6 +87,14 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ── WARNING: `text-base` collision ──
+   Because the theme defines `--color-base`, Tailwind ALSO generates a
+   `text-base` COLOR utility (color: var(--color-base)) alongside the stock
+   font-size one — and it wins over `text-accent` combos, bare usage, and any
+   `md:`/`xl:` responsive form, silently painting text in the page-background
+   colour. Convention: NEVER use `text-base` for font size — use `text-[16px]`
+   (plus an explicit leading-* if needed) and always pair with a colour class. */
+
 /* Light theme — applies at :root (global toggle) OR on any container with
    class="light", so sections can alternate dark/light moods on one page. */
 :root.light,

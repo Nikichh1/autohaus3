@@ -124,7 +124,7 @@ export function HouseScene({ copy = DEFAULT_COPY }: { copy?: HouseCopy }) {
                       {e.label}
                     </p>
                     <p
-                      className={`mt-4 max-w-sm text-sm leading-relaxed transition-opacity duration-500 md:text-base ${
+                      className={`mt-4 max-w-sm text-sm leading-relaxed transition-opacity duration-500 md:text-[16px] ${
                         isActive ? "text-fg-muted opacity-100" : "opacity-0"
                       }`}
                     >

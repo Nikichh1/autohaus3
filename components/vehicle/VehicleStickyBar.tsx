@@ -61,7 +61,10 @@ export function VehicleStickyBar({
                   <span className="font-medium text-fg-muted"> {vehicle.variant}</span>
                 )}
               </span>
-              <span className="shrink-0 font-display text-base font-extrabold text-accent">
+              {/* text-[16px], NOT text-base — the theme's --color-base makes
+                  `text-base` double as a colour utility that beats text-accent
+                  and painted this price near-black on the dark glass. */}
+              <span className="shrink-0 font-display text-[16px] font-extrabold text-accent">
                 {displayPrice(vehicle.price)}
               </span>
             </div>
