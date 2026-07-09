@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, ZoomIn, Minus, Plus, CalendarCheck } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ZoomIn, Minus, Plus, CalendarCheck, MoveHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const EVENT = "ah:gallery";
@@ -47,6 +47,7 @@ export function Lightbox({
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [interacting, setInteracting] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const panRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
@@ -148,6 +149,18 @@ export function Lightbox({
     };
   }, [open, go, resetZoom, zoomBy]);
 
+  // A one-time gesture hint on phones — shown on open, retires after a moment
+  // so first-time visitors immediately know they can swipe and zoom.
+  useEffect(() => {
+    if (!open) {
+      setShowHint(false);
+      return;
+    }
+    setShowHint(true);
+    const t = setTimeout(() => setShowHint(false), 4000);
+    return () => clearTimeout(t);
+  }, [open]);
+
   // Preload the neighbours so navigation and zoom are instant.
   useEffect(() => {
     if (!open || count < 2) return;
@@ -161,9 +174,15 @@ export function Lightbox({
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<{ startX: number; startY: number; panX: number; panY: number; pinchDist: number; pinchScale: number; moved: boolean } | null>(null);
   const lastTap = useRef(0);
+  const downTarget = useRef<HTMLElement | null>(null);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    (e.target as Element).setPointerCapture?.(e.pointerId);
+    try {
+      (e.target as Element).setPointerCapture?.(e.pointerId);
+    } catch {
+      /* pointer already released / not capturable — safe to ignore */
+    }
+    downTarget.current = e.target as HTMLElement;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     setInteracting(true);
     if (pointers.current.size === 1) {
@@ -221,31 +240,49 @@ export function Lightbox({
     const startX = g?.startX ?? 0;
     const startY = g?.startY ?? 0;
     const moved = g?.moved ?? false;
+    const target = downTarget.current;
     pointers.current.delete(e.pointerId);
+    if (pointers.current.size !== 0) return; // still mid pinch
 
-    if (pointers.current.size === 0) {
-      setInteracting(false);
-      if (scaleRef.current === 1) {
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-          go(dx < 0 ? 1 : -1);
-        } else if (!moved) {
-          const now = Date.now();
-          if (now - lastTap.current < 300) {
-            const el = viewportRef.current;
-            const r = el?.getBoundingClientRect();
-            const ox = r ? e.clientX - (r.left + el!.clientWidth / 2) : 0;
-            const oy = r ? e.clientY - (r.top + el!.clientHeight / 2) : 0;
-            applyScale(ZOOM_STEP, ox, oy);
-            lastTap.current = 0;
-          } else {
-            lastTap.current = now;
-          }
-        }
-      }
+    setInteracting(false);
+    const s = scaleRef.current;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    // Swipe to navigate — only when not zoomed.
+    if (s === 1 && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      go(dx < 0 ? 1 : -1);
       gesture.current = null;
+      return;
     }
+
+    if (!moved) {
+      const isImage = target?.tagName === "IMG";
+      const isControl = !!target?.closest?.("button, a");
+      const now = Date.now();
+      const isDouble = now - lastTap.current < 300;
+
+      if (isDouble && (isImage || s > 1)) {
+        // Double-tap / double-click the image: toggle zoom. Zoomed → back to
+        // the original preview; not zoomed → zoom into the tapped point.
+        lastTap.current = 0;
+        if (s > 1) {
+          resetZoom();
+        } else {
+          const el = viewportRef.current;
+          const r = el?.getBoundingClientRect();
+          const ox = r ? e.clientX - (r.left + el!.clientWidth / 2) : 0;
+          const oy = r ? e.clientY - (r.top + el!.clientHeight / 2) : 0;
+          applyScale(ZOOM_STEP, ox, oy);
+        }
+      } else {
+        lastTap.current = now;
+        // A single tap on the empty backdrop (not the photo, not a control),
+        // while not zoomed, exits the viewer.
+        if (s === 1 && !isImage && !isControl) setOpen(false);
+      }
+    }
+    gesture.current = null;
   };
 
   const onWheel = (e: React.WheelEvent) => {
@@ -278,11 +315,12 @@ export function Lightbox({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.32, ease: EASE }}
           data-lenis-prevent
+          data-lb-root
           className="fixed inset-0 z-[110] flex flex-col bg-[#06070a]/98 backdrop-blur-md"
         >
-          {/* top bar */}
+          {/* top bar — on phones it floats over the image with a scrim */}
           <div
-            className="relative z-20 flex items-center justify-between gap-4 px-4 py-4 md:px-6"
+            className="relative z-30 flex items-center justify-between gap-4 px-4 py-4 md:px-6 max-md:absolute max-md:inset-x-0 max-md:top-0 max-md:bg-gradient-to-b max-md:from-black/75 max-md:via-black/35 max-md:to-transparent max-md:pb-12"
             style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
           >
             <div className="flex items-center gap-3 text-white/70">
@@ -313,15 +351,45 @@ export function Lightbox({
             </div>
           </div>
 
-          {/* stage */}
+          {/* Phone gesture hint — a friendly, self-dismissing cue so anyone
+              instantly knows how to browse and zoom the photos. */}
+          <AnimatePresence>
+            {showHint && !zoomed && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                className="pointer-events-none absolute inset-x-0 z-30 flex justify-center px-4 md:hidden"
+                style={{ top: "calc(env(safe-area-inset-top) + 4.75rem)" }}
+              >
+                <div className="flex items-center gap-2.5 whitespace-nowrap rounded-full border border-white/12 bg-black/65 px-4 py-2 text-[11px] font-medium text-white/90 backdrop-blur-md">
+                  <span className="flex items-center gap-1.5">
+                    <MoveHorizontal className="size-3.5 text-accent" strokeWidth={1.8} />
+                    Плъзнете
+                  </span>
+                  <span className="h-3 w-px bg-white/20" />
+                  <span className="flex items-center gap-1.5">
+                    <ZoomIn className="size-3.5 text-accent" strokeWidth={1.8} />
+                    Двоен допир за близък план
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* stage — desktop: a flex row between the bars; phone: full-bleed so
+              the photo is as large as possible and the chrome floats over it */}
           <div
             ref={viewportRef}
+            data-lb-stage
+            data-zoomed={zoomed ? "true" : "false"}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
             onWheel={onWheel}
-            className={cn("relative flex-1 touch-none select-none overflow-hidden", zoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in")}
+            className={cn("relative flex-1 touch-none select-none overflow-hidden max-md:absolute max-md:inset-0 max-md:z-0", zoomed && "cursor-grab active:cursor-grabbing")}
           >
             <AnimatePresence custom={dir} initial={false}>
               <motion.div
@@ -363,9 +431,12 @@ export function Lightbox({
             )}
           </div>
 
+          {/* Bottom controls — a solid rail on desktop; on phones they float over
+              the lower letterbox with a scrim, so the photo fills the frame. */}
+          <div className="max-md:pointer-events-none max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:z-20 max-md:bg-gradient-to-t max-md:from-black/90 max-md:via-black/55 max-md:to-transparent max-md:pt-14 md:contents">
           {/* decision rail — specs + book a viewing, held in view while inspecting */}
           {(specs.length > 0 || bookHref) && (
-            <div className="relative z-20 border-t border-white/10 bg-black/40 backdrop-blur-md">
+            <div className="pointer-events-auto relative z-20 md:border-t md:border-white/10 md:bg-black/40 md:backdrop-blur-md">
               <div className="mx-auto flex max-w-[1320px] flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6">
                 {specs.length > 0 && (
                   <dl className="no-scrollbar flex items-center gap-5 overflow-x-auto md:gap-8">
@@ -392,7 +463,7 @@ export function Lightbox({
           {/* filmstrip */}
           {count > 1 && (
             <div
-              className="no-scrollbar relative z-20 flex gap-2 overflow-x-auto border-t border-white/10 bg-black/30 px-4 py-3 md:px-6"
+              className="no-scrollbar pointer-events-auto relative z-20 flex gap-2 overflow-x-auto px-4 py-3 md:border-t md:border-white/10 md:bg-black/30 md:px-6"
               style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
             >
               {images.map((src, i) => (
@@ -412,6 +483,7 @@ export function Lightbox({
               ))}
             </div>
           )}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

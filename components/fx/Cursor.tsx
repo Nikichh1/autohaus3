@@ -91,7 +91,7 @@ export function Cursor() {
       ref={rootRef}
       aria-hidden
       data-mode="hidden"
-      className="ah-cursor pointer-events-none fixed left-0 top-0 z-[80]"
+      className="ah-cursor pointer-events-none fixed left-0 top-0 z-[130]"
       style={{ transform: "translate3d(-100px, -100px, 0)" }}
     >
       <div className="ah-cursor-mark">

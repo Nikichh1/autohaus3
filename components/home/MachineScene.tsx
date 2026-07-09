@@ -12,9 +12,9 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
+import { Volume2, VolumeX } from "lucide-react";
 import { CinematicGrade } from "@/components/fx/CinematicGrade";
-import { Magnetic } from "@/components/fx/Magnetic";
-import { ButtonLink } from "@/components/ui/Button";
+import { machineEngine } from "@/lib/sound/machine-engine";
 
 /**
  * Chapter 04 — The Machine. Full-screen scroll-scrubbed film (pre-decoded
@@ -62,6 +62,8 @@ export function MachineScene({ copy = DEFAULT_COPY }: { copy?: MachineCopy }) {
   const [isMobile, setIsMobile] = useState(false);
   const [loaded, setLoaded] = useState(0);
   const [near, setNear] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
+  const soundOnRef = useRef(false);
 
   const progress = useMotionValue(0);
 
@@ -71,11 +73,24 @@ export function MachineScene({ copy = DEFAULT_COPY }: { copy?: MachineCopy }) {
   const subOpacity = useTransform(progress, [0.46, 0.56], [0, 1]);
   const subY = useTransform(progress, [0.46, 0.56], [26, 0]);
   const hudOpacity = useTransform(progress, [0.05, 0.15], [0, 1]);
-  // The CTA surfaces once the machine is fully revealed.
-  const ctaOpacity = useTransform(progress, [0.52, 0.64], [0, 1]);
-  const ctaY = useTransform(progress, [0.52, 0.64], [18, 0]);
   // The film itself breathes with the scroll — a slow push-in.
   const filmScale = useTransform(progress, [0, 1], [1.09, 1]);
+
+  // Engine sound — opt-in (browsers need a gesture). Once armed, the revs track
+  // the tach exactly, driven from the scroll loop below; it fades as the scene
+  // enters / leaves the viewport and stops on unmount.
+  const toggleSound = () => {
+    if (soundOnRef.current) {
+      machineEngine.stop();
+      soundOnRef.current = false;
+      setSoundOn(false);
+    } else if (machineEngine.start()) {
+      soundOnRef.current = true;
+      setSoundOn(true);
+      machineEngine.setActive(activeRef.current);
+    }
+  };
+  useEffect(() => () => machineEngine.stop(), []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -108,6 +123,7 @@ export function MachineScene({ copy = DEFAULT_COPY }: { copy?: MachineCopy }) {
     const io = new IntersectionObserver(
       ([entry]) => {
         activeRef.current = entry.isIntersecting;
+        if (soundOnRef.current) machineEngine.setActive(entry.isIntersecting);
       },
       { rootMargin: "0px" },
     );
@@ -173,6 +189,11 @@ export function MachineScene({ copy = DEFAULT_COPY }: { copy?: MachineCopy }) {
     const dist = rect.height - window.innerHeight;
     const p = dist > 0 ? Math.min(Math.max(-rect.top / dist, 0), 1) : 0;
     progress.set(p);
+
+    // Feed the revs to the engine sound (if armed) — matches the tach 1:1.
+    if (soundOnRef.current && !reduce) {
+      machineEngine.setRpm(RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
+    }
 
     if (reduce) {
       if (lastIdx.current !== 0) {
@@ -273,23 +294,16 @@ export function MachineScene({ copy = DEFAULT_COPY }: { copy?: MachineCopy }) {
             </motion.p>
           </div>
 
-          <div>
-            {/* Shift-through-the-gears telemetry — scrolling revs the tach;
-                crest the window and the box snaps up a gear. */}
-            <motion.div style={{ opacity: hudOpacity }}>
-              <TachCluster progress={progress} reduce={!!reduce} />
-            </motion.div>
-            <motion.div
-              style={reduce ? undefined : { opacity: ctaOpacity, y: ctaY }}
-              className="mt-6"
-            >
-              <Magnetic strength={0.14}>
-                <ButtonLink href="/avtomobili" variant="solid" size="md" arrow>
-                  Изберете вашата
-                </ButtonLink>
-              </Magnetic>
-            </motion.div>
-          </div>
+          {/* Shift-through-the-gears telemetry — scrolling revs the tach; crest
+              the window and the box snaps up a gear. The engine sound follows. */}
+          <motion.div style={{ opacity: hudOpacity }}>
+            <TachCluster
+              progress={progress}
+              reduce={!!reduce}
+              soundOn={soundOn}
+              onToggleSound={toggleSound}
+            />
+          </motion.div>
         </div>
 
         {/* scan line — sweeps the film side only */}
@@ -371,7 +385,17 @@ function dialPoint(r: number, deg: number): [number, number] {
 }
 const rpmDeg = (rpm: number) => -120 + (rpm / RPM_MAX) * 240;
 
-function TachCluster({ progress, reduce }: { progress: MotionValue<number>; reduce: boolean }) {
+function TachCluster({
+  progress,
+  reduce,
+  soundOn,
+  onToggleSound,
+}: {
+  progress: MotionValue<number>;
+  reduce: boolean;
+  soundOn: boolean;
+  onToggleSound: () => void;
+}) {
   const rpmRaw = useTransform(progress, (p) =>
     reduce ? RPM_IDLE : RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE),
   );
@@ -430,41 +454,37 @@ function TachCluster({ progress, reduce }: { progress: MotionValue<number>; redu
   const [rx2, ry2] = dialPoint(80, rpmDeg(RPM_MAX));
 
   return (
-    <div style={{ filter: "drop-shadow(0 18px 32px rgb(0 0 0 / 0.45))" }}>
-      <div className="clip-chamfer relative" style={{ ["--ch" as string]: "14px" }}>
-        {/* pod material — carbon glass */}
-        <div
-          aria-hidden
-          className="absolute inset-0 border border-white/10"
-          style={{ background: "linear-gradient(180deg, rgb(21 24 30 / 0.92) 0%, rgb(10 12 16 / 0.94) 100%)" }}
-        />
-        <div aria-hidden className="carbon-fine absolute inset-0 opacity-30" />
+    <div style={{ filter: "drop-shadow(0 22px 44px rgb(0 0 0 / 0.55))" }}>
+      {/* Semi-transparent cockpit glass — the film behind reads through a soft
+          blur; a chamfered engineered edge and a rev-reactive red filament keep
+          it on-brand (titanium + racing red, no off-palette accents). */}
+      <div
+        className="clip-chamfer relative border border-white/12 backdrop-blur-2xl backdrop-saturate-150"
+        style={{ ["--ch" as string]: "14px", background: "linear-gradient(180deg, rgb(20 23 28 / 0.5) 0%, rgb(10 12 16 / 0.6) 100%)" }}
+      >
+        <div aria-hidden className="carbon-fine absolute inset-0 opacity-[0.12]" />
         <div
           aria-hidden
           className="absolute inset-0"
-          style={{ background: "linear-gradient(180deg, rgb(245 247 249 / 0.06), transparent 40%)" }}
+          style={{ background: "linear-gradient(180deg, rgb(245 247 249 / 0.07), transparent 42%)" }}
         />
         {/* edge filament — heats with the revs */}
         <motion.div aria-hidden style={{ opacity: rimHeat }} className="edge-race absolute inset-0" />
 
-        <div className="relative p-4 xl:p-5">
-          {/* header — live marker + the tricolour handshake */}
-          <div className="flex items-center justify-between">
+        <div className="relative p-5">
+          {/* header — live marker + the engine-sound toggle */}
+          <div className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-2">
               <span aria-hidden className="race-led size-1.5 rounded-full bg-racing" />
               <span className="label-fine text-[9px] text-fg-muted">Телеметрия · На живо</span>
             </span>
-            <span aria-hidden className="flex gap-1">
-              <span className="h-1 w-6 -skew-x-[24deg] rounded-[1px] bg-[#81c4ff]" />
-              <span className="h-1 w-6 -skew-x-[24deg] rounded-[1px] bg-[#16588e]" />
-              <span className="h-1 w-6 -skew-x-[24deg] rounded-[1px] bg-[#e7222e]" />
-            </span>
+            <SoundToggle on={soundOn} onClick={onToggleSound} />
           </div>
 
-          <div className="mt-3 flex items-end gap-6">
+          <div className="mt-4 flex items-center gap-6">
             {/* dial */}
-            <div ref={dialRef} className="relative w-[148px] shrink-0 xl:w-[172px]">
-              <svg viewBox="0 0 200 118" fill="none" aria-hidden className="w-full text-accent">
+            <div ref={dialRef} className="relative w-[150px] shrink-0 xl:w-[166px]">
+              <svg viewBox="0 0 200 118" fill="none" aria-hidden className="w-full text-fg-muted">
                 {/* track */}
                 <path d={`M ${ax} ${ay} A 80 80 0 1 1 ${bx} ${by}`} stroke="rgb(245 247 249 / 0.14)" strokeWidth={3} />
                 {/* live rev arc — halo + core chase the needle */}
@@ -519,23 +539,24 @@ function TachCluster({ progress, reduce }: { progress: MotionValue<number>; redu
                 {/* needle — native SVG rotation about the exact hub point (CSS
                     transform-origin on SVG groups is unreliable across engines) */}
                 <Needle angle={needle} />
-                <circle cx={100} cy={104} r={5.5} fill="#14171c" stroke="currentColor" strokeOpacity={0.6} />
+                <circle cx={100} cy={104} r={4.5} fill="#12151a" stroke="var(--color-racing)" strokeOpacity={0.7} strokeWidth={1.4} />
               </svg>
-              <p className="pointer-events-none absolute inset-x-0 bottom-0 text-center">
-                <motion.span className="font-display text-sm font-bold tabular-nums text-fg">{rpmText}</motion.span>
-                <span className="label-fine ml-1.5 text-[9px] text-fg-subtle">×1000 об/мин</span>
+              {/* digital rpm — BELOW the dial, so nothing crosses it */}
+              <p className="mt-1.5 flex items-baseline justify-center gap-1.5 leading-none">
+                <motion.span className="font-display text-lg font-extrabold tabular-nums text-fg">{rpmText}</motion.span>
+                <span className="label-fine text-[9px] text-fg-subtle">×1000 об/мин</span>
               </p>
             </div>
 
             {/* shift lights + gear box */}
-            <div className="min-w-0 pb-1">
+            <div className="min-w-0 flex-1">
               <div className="mb-3 flex items-center gap-1.5">
                 {Array.from({ length: 8 }, (_, i) => (
                   <ShiftLed key={i} index={i} rpm={rpm} />
                 ))}
               </div>
-              <div className="flex items-baseline gap-3">
-                <motion.span className="font-display text-5xl font-extrabold leading-none tabular-nums text-fg xl:text-6xl">
+              <div className="flex items-baseline gap-2.5">
+                <motion.span className="font-display text-6xl font-extrabold leading-none tabular-nums text-fg">
                   {gearNum}
                 </motion.span>
                 <span className="label-fine text-fg-muted">предавка</span>
@@ -544,7 +565,7 @@ function TachCluster({ progress, reduce }: { progress: MotionValue<number>; redu
           </div>
 
           {/* readout strip — speed / charge / oil */}
-          <div className="mt-4 grid grid-cols-3 border-t border-white/10 pt-3">
+          <div className="mt-5 grid grid-cols-3 border-t border-white/10 pt-3.5">
             <Readout label="Скорост" value={speedText} unit="км/ч" />
             <Readout label="Волтаж" value={voltText} unit="V" divided />
             <Readout label="Масло" value={oilText} unit="°C" divided />
@@ -607,9 +628,41 @@ function Needle({ angle }: { angle: MotionValue<number> }) {
   }, [angle]);
   return (
     <g ref={ref}>
-      <line x1={100} y1={104} x2={100} y2={30} stroke="var(--color-racing)" strokeWidth={2.5} strokeLinecap="round" />
-      <line x1={100} y1={104} x2={100} y2={116} stroke="var(--color-racing)" strokeWidth={2.5} strokeLinecap="round" strokeOpacity={0.5} />
+      <line x1={100} y1={104} x2={100} y2={32} stroke="var(--color-racing)" strokeWidth={2.5} strokeLinecap="round" />
     </g>
+  );
+}
+
+/** Engine-sound toggle — the one control in this section. Off by default
+ *  (browsers need a gesture); armed, it reveals a live equaliser and the revs
+ *  track the tach. Reads "Чуй двигателя" so anyone knows exactly what it does. */
+function SoundToggle({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      aria-label={on ? "Изключете звука на двигателя" : "Чуйте двигателя"}
+      className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 transition-colors ${
+        on
+          ? "border-racing/50 bg-racing/[0.12] text-racing"
+          : "border-white/15 bg-white/[0.05] text-fg-muted hover:border-white/35 hover:text-fg"
+      }`}
+    >
+      {on ? <Volume2 className="size-3.5" strokeWidth={1.9} /> : <VolumeX className="size-3.5" strokeWidth={1.9} />}
+      <span className="label-fine text-[9px]">{on ? "Звук" : "Чуй двигателя"}</span>
+      {on && (
+        <span aria-hidden className="flex items-end gap-[2px]">
+          {[0.5, 0.9, 0.65].map((d, i) => (
+            <span
+              key={i}
+              className="eq-bar w-[2px] rounded-full bg-racing"
+              style={{ height: 8, animationDelay: `${i * 0.16}s`, animationDuration: `${d + 0.4}s` }}
+            />
+          ))}
+        </span>
+      )}
+    </button>
   );
 }
 
