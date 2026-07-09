@@ -87,6 +87,36 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
     [vehicles, filters, sort],
   );
 
+  // ── Windowing — render only a batch of cards and grow it as the user nears
+  // the end. Rendering all 80+ cards up front shipped a ~700KB HTML payload and
+  // hydrated dozens of 3D tilt cards + images at once (slow first paint). This
+  // keeps the DOM light; filtering still runs over the full `results`. ──
+  const PAGE = 12;
+  const [shown, setShown] = useState(PAGE);
+  // Reset the window whenever the result set changes (filter / sort / tab).
+  useEffect(() => {
+    setShown(PAGE);
+  }, [filters, sort]);
+  const visible = useMemo(() => results.slice(0, shown), [results, shown]);
+  const hasMore = shown < results.length;
+
+  // Auto-load the next batch as the sentinel approaches the viewport.
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setShown((s) => (s < results.length ? Math.min(s + PAGE, results.length) : s));
+        }
+      },
+      { rootMargin: "900px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [results.length, hasMore]);
+
   const updateFilters = useCallback((partial: Partial<Filters>) => {
     setFilters((prev) => ({ ...prev, ...partial }));
   }, []);
@@ -259,23 +289,40 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
         {results.length === 0 ? (
           <EmptyState onClear={clearAll} />
         ) : (
-          <motion.div
-            key={filters.collection ?? "all"}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            // `vgrid` — touch devices force the grid and its entrance wrappers
-            // visible (globals.css): the catalog paints straight from server
-            // HTML instead of waiting invisible for hydration + animation.
-            className="vgrid mt-10 grid grid-cols-1 gap-x-8 gap-y-14 sm:mt-12 md:grid-cols-2 md:gap-y-16 xl:grid-cols-3 2xl:grid-cols-4"
-          >
-            {results.map((v, i) => (
-              <FadeIn key={v.id} delay={(i % 6) * 0.06} y={24}>
-                {/* First card is the catalog's LCP — load it eagerly. */}
-                <VehicleCard vehicle={v} priority={i === 0} />
-              </FadeIn>
-            ))}
-          </motion.div>
+          <>
+            <motion.div
+              key={filters.collection ?? "all"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              // `vgrid` — touch devices force the grid and its entrance wrappers
+              // visible (globals.css): the catalog paints straight from server
+              // HTML instead of waiting invisible for hydration + animation.
+              className="vgrid mt-10 grid grid-cols-1 gap-x-8 gap-y-14 sm:mt-12 md:grid-cols-2 md:gap-y-16 xl:grid-cols-3 2xl:grid-cols-4"
+            >
+              {visible.map((v, i) => (
+                <FadeIn key={v.id} delay={(i % 6) * 0.06} y={24}>
+                  {/* First card is the catalog's LCP — load it eagerly. */}
+                  <VehicleCard vehicle={v} priority={i === 0} />
+                </FadeIn>
+              ))}
+            </motion.div>
+
+            {hasMore && (
+              <div ref={sentinelRef} className="mt-14 flex flex-col items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShown((s) => Math.min(s + PAGE, results.length))}
+                  className="inline-flex h-12 items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-6 text-sm font-medium text-fg transition-colors hover:border-accent"
+                >
+                  Покажи още
+                  <span className="text-xs tabular-nums text-fg-subtle">
+                    {results.length - shown}
+                  </span>
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
       </div>

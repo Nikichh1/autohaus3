@@ -27,6 +27,14 @@
   --color-line-strong: rgb(245 247 249 / 0.18);
   --color-overlay: rgb(8 9 12 / 0.62);
 
+  /* Motorsport accent — the "Autohaus R" performance red. Deliberately deep and
+     premium (not candy). Used SPARINGLY, only in performance contexts, to create
+     contrast against the titanium baseline. Generates bg-racing / text-racing /
+     border-racing. `--racing-glow` is the matching rgb triplet for glow alphas. */
+  --color-racing: #e11d2a;
+  --color-racing-bright: #ff3b40;
+  --racing-glow: 225 29 42;
+
   /* Type families — values injected by next/font in layout.tsx */
   --font-display: var(--font-manrope), "Manrope", system-ui, sans-serif;
   --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
@@ -270,6 +278,13 @@
   background-clip: text;
   color: transparent;
 }
+/* Performance stat — white melting into racing red (performance cars only). */
+.text-racing-num {
+  background: linear-gradient(180deg, #fff 0%, #ffd7d9 42%, var(--color-racing-bright, #ff3b40) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 /* Financing monthly — white melting into champagne. */
 .text-gold-num {
   background: linear-gradient(180deg, #fff 0%, var(--vg-pale) 50%, var(--vg) 100%);
@@ -454,6 +469,98 @@
   box-shadow:
     inset 0 -24px 48px -34px rgb(0 0 0 / 0.50), /* gentle lower lens depth */
     0 26px 58px -34px rgb(0 0 0 / 0.64);        /* soft float shadow */
+}
+
+/* ═══════════════════  Autohaus R — Motorsport layer  ═══════════════════
+   A restrained racing-red performance identity that IGNITES only in performance
+   contexts (the Performance collection, performance vehicles), for deliberate
+   contrast against the titanium-luxury baseline. Never site-wide. Every effect
+   is GPU-only (transform/opacity/filter) and reduced-motion aware. */
+
+/* Chamfered "HUD panel" silhouette — all four corners cut. The engineered,
+   angular counter to the site's soft radii; used on the cockpit pod housing. */
+.clip-chamfer {
+  clip-path: polygon(
+    var(--ch, 16px) 0, calc(100% - var(--ch, 16px)) 0, 100% var(--ch, 16px),
+    100% calc(100% - var(--ch, 16px)), calc(100% - var(--ch, 16px)) 100%,
+    var(--ch, 16px) 100%, 0 calc(100% - var(--ch, 16px)), 0 var(--ch, 16px)
+  );
+}
+/* Aerodynamic end cap — a wing that slants on its OUTER edge (left variant;
+   mirror with scaleX(-1)). Reads as the flared pod ends in the reference. */
+.clip-wing-l { clip-path: polygon(18px 0, 100% 0, 100% 100%, 0 100%); }
+.clip-wing-r { clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%); }
+
+/* Carbon-weave, finer + darker than `.carbon` — a whisper of texture on the pod. */
+.carbon-fine {
+  background-color: #0c0e11;
+  background-image:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.02) 0 1px, transparent 1px 4px);
+  background-size: 6px 6px;
+}
+
+/* Illuminated red filament along the top edge — the hot glowing border from the
+   reference. Parent must be position:relative. Tint the alpha down for subtlety. */
+.edge-race::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--racing-glow) / 0.85) 26%,
+    rgb(var(--racing-glow) / 0.85) 74%,
+    transparent
+  );
+  box-shadow: 0 0 16px rgb(var(--racing-glow) / 0.55);
+}
+
+/* Soft red underglow — sits beneath an active performance element. */
+.race-underglow {
+  box-shadow:
+    0 0 0 1px rgb(var(--racing-glow) / 0.55),
+    0 8px 26px -6px rgb(var(--racing-glow) / 0.6),
+    0 0 40px -4px rgb(var(--racing-glow) / 0.45);
+}
+
+/* Telemetry tick strip — evenly spaced hairline ticks, like an instrument scale.
+   Apply to a thin element; control colour via `color` and density via --gap. */
+.hud-ticks {
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px var(--gap, 9px)
+  );
+}
+
+/* Standby LED — a small light that breathes. The "engine idling" cue. */
+@keyframes race-breathe {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px 0 rgb(var(--racing-glow) / 0.8); }
+  50% { opacity: 0.55; box-shadow: 0 0 4px 0 rgb(var(--racing-glow) / 0.4); }
+}
+.race-led {
+  animation: race-breathe 2.4s ease-in-out infinite;
+  will-change: opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .race-led { animation: none; }
+}
+
+/* Slow diagonal light sweep — a faint sheen that crosses the pod on a long loop,
+   like light traveling over a carbon surface. Desktop + motion only. */
+@keyframes race-scan {
+  0% { transform: translateX(-140%); }
+  100% { transform: translateX(140%); }
+}
+.race-scan { will-change: transform; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .race-scan { animation: race-scan 6.5s var(--ease-out-expo) infinite; }
 }
 
 @layer base {
@@ -918,6 +1025,39 @@ html[data-intro-active] [data-chapter-rail] {
   opacity: 0;
   pointer-events: none;
 }
+
+/* ── Chapter-rail contrast — each tick colours ITSELF to the section behind it.
+   `--rail-fg` is set per-button from JS (titanium on dark beats, graphite over
+   the light paper) so a rail straddling a seam shows both, each contrasting.
+   All state (colour / width / opacity) cross-fades smoothly. */
+[data-chapter-rail] button { --rail-fg: 245 247 249; }
+[data-chapter-rail] button[data-lit="true"] { --rail-fg: 12 14 18; }
+
+.rail-mark {
+  height: 1px;
+  width: 0.875rem;
+  opacity: 0.4;
+  background-color: rgb(var(--rail-fg));
+  transition:
+    background-color 0.6s var(--ease-out-expo),
+    width 0.5s var(--ease-out-expo),
+    opacity 0.4s ease;
+}
+[data-chapter-rail] button:hover .rail-mark { width: 1.25rem; opacity: 0.7; }
+[data-chapter-rail] button[data-active="true"] .rail-mark { width: 2rem; opacity: 1; }
+
+.rail-label {
+  white-space: nowrap;
+  color: rgb(var(--rail-fg));
+  opacity: 0;
+  transform: translateX(-0.375rem);
+  transition:
+    color 0.6s var(--ease-out-expo),
+    opacity 0.4s ease,
+    transform 0.5s var(--ease-out-expo);
+}
+[data-chapter-rail] button:hover .rail-label { opacity: 0.6; transform: translateX(0); }
+[data-chapter-rail] button[data-active="true"] .rail-label { opacity: 0.8; transform: translateX(0); }
 
 /* Hide the site nav while the scroll-scrubbed cinematic intro owns the viewport;
    it fades back in as the intro dissolves into the hero. */

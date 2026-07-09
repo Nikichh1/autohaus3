@@ -28,6 +28,7 @@ export function EngineSoundPlayer({
   className,
   compact = false,
   accent = false,
+  hot = false,
 }: {
   sound: EngineSound;
   title?: string;
@@ -36,6 +37,8 @@ export function EngineSoundPlayer({
   compact?: boolean;
   /** Use the accent colour for the play button (instead of the default light fill). */
   accent?: boolean;
+  /** Autohaus R mode — performance cars run the player racing-red. */
+  hot?: boolean;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const barsRef = useRef<HTMLDivElement>(null);
@@ -124,8 +127,9 @@ export function EngineSoundPlayer({
           playing && "opacity-100",
         )}
         style={{
-          background:
-            "radial-gradient(120% 90% at 15% 0%, rgba(201,207,214,0.16), transparent 60%)",
+          background: hot
+            ? "radial-gradient(120% 90% at 15% 0%, rgb(var(--racing-glow) / 0.15), transparent 60%)"
+            : "radial-gradient(120% 90% at 15% 0%, rgba(201,207,214,0.16), transparent 60%)",
         }}
       />
 
@@ -135,20 +139,29 @@ export function EngineSoundPlayer({
           aria-label={playing ? "Пауза" : "Възпроизведи"}
           aria-pressed={playing}
           style={
-            accent
-              ? { background: "linear-gradient(180deg,var(--va,var(--color-accent)),var(--va-deep,var(--color-accent-deep)))", color: "var(--color-base)" }
-              : undefined
+            hot
+              ? {
+                  background: "linear-gradient(180deg,var(--color-racing-bright),var(--color-racing))",
+                  color: "#fff",
+                  boxShadow: "0 10px 30px -10px rgb(var(--racing-glow) / 0.65)",
+                }
+              : accent
+                ? { background: "linear-gradient(180deg,var(--va,var(--color-accent)),var(--va-deep,var(--color-accent-deep)))", color: "var(--color-base)" }
+                : undefined
           }
           className={cn(
             "relative flex shrink-0 items-center justify-center rounded-full shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:scale-105 active:scale-95",
-            accent ? "" : "bg-fg text-ink",
+            accent || hot ? "" : "bg-fg text-ink",
             compact ? "size-12" : "size-14 sm:size-16",
           )}
         >
           {/* pulsing ring while playing */}
           {playing && (
             <span
-              className={cn("absolute inset-0 animate-ping rounded-full", accent ? "bg-accent/30" : "bg-fg/30")}
+              className={cn(
+                "absolute inset-0 animate-ping rounded-full",
+                hot ? "bg-racing/35" : accent ? "bg-accent/30" : "bg-fg/30",
+              )}
               style={{ animationDuration: "1.6s" }}
             />
           )}
@@ -165,7 +178,7 @@ export function EngineSoundPlayer({
           {!compact && (
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Gauge className="size-4 text-accent" />
+                <Gauge className={cn("size-4", hot ? "text-racing" : "text-accent")} />
                 <span className="text-sm font-semibold text-fg">{title}</span>
                 <span className="hidden text-xs text-fg-subtle sm:inline">· {subtitle}</span>
               </div>
@@ -196,7 +209,8 @@ export function EngineSoundPlayer({
               }
             }}
             className={cn(
-              "flex cursor-pointer touch-none items-center gap-[2px] outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded",
+              "flex cursor-pointer touch-none items-center gap-[2px] outline-none focus-visible:ring-2 rounded",
+              hot ? "focus-visible:ring-racing/50" : "focus-visible:ring-accent/50",
               compact ? "h-9" : "h-12 sm:h-14",
             )}
           >
@@ -207,7 +221,7 @@ export function EngineSoundPlayer({
                   key={i}
                   className={cn(
                     "min-h-[3px] flex-1 rounded-full transition-colors duration-150",
-                    filled ? "bg-accent" : "bg-fg/20",
+                    filled ? (hot ? "bg-racing" : "bg-accent") : "bg-fg/20",
                   )}
                   style={{
                     height: `${Math.round(p * 100)}%`,
@@ -248,7 +262,7 @@ export function EngineSoundPlayer({
                 setMuted(false);
               }}
               aria-label="Сила на звука"
-              className="h-1 w-20 cursor-pointer accent-accent"
+              className={cn("h-1 w-20 cursor-pointer", hot ? "accent-racing" : "accent-accent")}
             />
           </div>
         )}

@@ -68,7 +68,12 @@ export default async function HomePage() {
         }}
       />
       <ManifestoDrive statement={cms["home.manifesto.statement"]} />
-      <MachineScene />
+      <MachineScene
+        copy={{
+          title: cms["home.machine.title"],
+          subcopy: cms["home.machine.subcopy"],
+        }}
+      />
       <ConciergeScene
         copy={{
           eyebrow: cms["home.concierge.eyebrow"],

@@ -132,7 +132,15 @@ export function FinaleScene({ copy = DEFAULT_COPY }: { copy?: FinaleCopy }) {
                 animate={reduce || headInView ? { y: "0%" } : { y: "110%" }}
                 transition={{ duration: 1.05, ease: ease.entrance, delay: 0.26 }}
               >
-                {copy.headingLine2}
+                {/* racing full-stop — the closing line ends on the red mark */}
+                {copy.headingLine2.endsWith(".") ? (
+                  <>
+                    {copy.headingLine2.slice(0, -1)}
+                    <span className="text-racing">.</span>
+                  </>
+                ) : (
+                  copy.headingLine2
+                )}
               </motion.span>
             </span>
           </h2>

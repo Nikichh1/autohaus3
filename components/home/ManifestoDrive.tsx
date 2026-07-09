@@ -80,9 +80,9 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
       <div className="relative z-10 px-5 pb-10 pt-20">
         <FadeIn>
           <p className="label-fine text-fg-subtle">
-            <span aria-hidden className="mr-2 text-accent">[</span>
+            <span aria-hidden className="mr-2 text-racing">[</span>
             02 · Философията на AutoHaus
-            <span aria-hidden className="ml-2 text-accent">]</span>
+            <span aria-hidden className="ml-2 text-racing">]</span>
           </p>
         </FadeIn>
         <FadeIn delay={0.1}>
@@ -145,9 +145,9 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
 
         <div className="relative z-10 mx-auto w-full max-w-wide px-5 sm:px-8 md:px-12">
           <p className="label-fine mb-8 text-fg-subtle md:mb-10">
-            <span aria-hidden className="mr-2 text-accent">[</span>
+            <span aria-hidden className="mr-2 text-racing">[</span>
             02 · Философията на AutoHaus
-            <span aria-hidden className="ml-2 text-accent">]</span>
+            <span aria-hidden className="ml-2 text-racing">]</span>
           </p>
           <p className="flex max-w-4xl flex-wrap font-display text-[1.6rem] font-extrabold leading-[1.2] tracking-tight sm:text-[2rem] md:text-[clamp(2.1rem,3.4vw,3.2rem)] md:leading-[1.12]">
             {chunks.map((c) => (

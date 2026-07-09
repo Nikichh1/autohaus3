@@ -66,9 +66,9 @@ export const COLLECTIONS = ["performance", "executive", "signature"] as const;
 export type Collection = (typeof COLLECTIONS)[number];
 
 export const COLLECTION_LABELS: Record<Collection, string> = {
-  performance: "Performance",
-  executive: "Executive",
-  signature: "Signature",
+  performance: "Спортни",
+  executive: "Луксозни",
+  signature: "Ежедневни",
 };
 
 // Re-export the existing public-site label maps so the admin shares one vocabulary.

@@ -29,6 +29,8 @@ export function CinematicHero({
 }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  // Autohaus R — performance cars carry the racing identity through the hero.
+  const hot = vehicle.collection === "performance";
 
   const fullLabel = `${vehicle.brand} ${vehicle.model}${vehicle.variant ? " " + vehicle.variant : ""}`;
   const telHref = `tel:${phone.replace(/\s/g, "")}`;
@@ -51,10 +53,11 @@ export function CinematicHero({
     <>
       <VehicleStage images={vehicle.images} alt={fullLabel} recLabel={recLabel} />
       {vehicle.engineSound && (
-        <div className="vd-cut carbon mt-3 border border-line-strong p-1.5 md:mt-4">
+        <div className={`vd-cut carbon mt-3 border p-1.5 md:mt-4 ${hot ? "border-racing/30" : "border-line-strong"}`}>
           <EngineSoundPlayer
             sound={vehicle.engineSound}
             accent
+            hot={hot}
             compact
             title="Чуйте двигателя"
             subtitle="истински запис"
@@ -72,10 +75,15 @@ export function CinematicHero({
         initial={reduce ? false : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.05 }}
-        className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-muted"
+        className="flex flex-wrap items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-fg-muted"
       >
-        <span className="size-[6px] rounded-full bg-accent" />
+        <span className={`size-[6px] rounded-full ${hot ? "race-led bg-racing" : "bg-accent"}`} />
         {overline}
+        {hot && (
+          <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-racing/40 bg-racing/[0.08] px-2 py-0.5 text-[9px] font-bold tracking-[0.16em] text-racing">
+            Спортна серия
+          </span>
+        )}
       </motion.p>
 
       {/* model — restrained, fills the column and wraps cleanly (2 lines for a

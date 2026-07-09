@@ -1,90 +1,133 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Chapter = { num: string; label: string; el: HTMLElement };
 
+/** Is the section a light one? (the Collection is `.light`.) */
+function isLightSection(el: HTMLElement): boolean {
+  return el.classList.contains("light") || !!el.closest(".light");
+}
+
 /**
  * Chapter rail — the film's spine, fixed on the left edge (desktop only).
- * Discovers every `[data-chapter]` section, marks the one on screen and lets
- * the viewer jump between scenes. Rendered in mix-blend-difference so it reads
- * over both the dark film beats and the light editorial paper. One of the
- * signature custom elements of the AutoHaus experience.
+ *
+ * Each tick colours ITSELF to contrast with the section directly behind it:
+ * titanium over the dark film beats, graphite over the light editorial paper.
+ * Because the rail spans several sections at once, the ticks are coloured
+ * INDIVIDUALLY — when the viewport straddles a seam, the upper ticks and lower
+ * ticks can be different colours, each contrasting with its own backdrop.
+ *
+ * It is driven by scroll position (not an IntersectionObserver), so the colour
+ * tracks continuously and never gets "stuck" between sections. Performance: the
+ * section boundaries and the (fixed) tick positions are measured ONCE per
+ * layout; each scroll frame only does arithmetic + a couple of attribute writes
+ * (no getBoundingClientRect, no React re-render). Idle = nothing.
  */
 export function ChapterRail() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [active, setActive] = useState(0);
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const sections = useRef<{ top: number; light: boolean }[]>([]);
+  const tickY = useRef<number[]>([]);
 
+  // discover the chapters once
   useEffect(() => {
-    const els = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-chapter]"),
-    );
-    const found = els.map((el) => ({
-      num: el.dataset.chapter ?? "",
-      label: el.dataset.chapterLabel ?? "",
-      el,
-    }));
-    // The chapter list only exists in the DOM — discovered after mount by design.
+    const els = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setChapters(found);
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const idx = els.indexOf(entry.target as HTMLElement);
-            if (idx >= 0) setActive(idx);
-          }
-        }
-      },
-      // A thin band across the viewport centre decides the current chapter.
-      { rootMargin: "-46% 0px -46% 0px" },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    setChapters(els.map((el) => ({ num: el.dataset.chapter ?? "", label: el.dataset.chapterLabel ?? "", el })));
   }, []);
+
+  // measure + drive (once chapters + buttons are in the DOM)
+  useEffect(() => {
+    if (!chapters.length) return;
+
+    const measure = () => {
+      const sy = window.scrollY;
+      sections.current = chapters.map((c) => {
+        const r = c.el.getBoundingClientRect();
+        return { top: r.top + sy, light: isLightSection(c.el) };
+      });
+      tickY.current = btnRefs.current.map((b) => {
+        if (!b) return window.innerHeight / 2;
+        const r = b.getBoundingClientRect();
+        return r.top + r.height / 2;
+      });
+    };
+
+    const compute = () => {
+      const secs = sections.current;
+      const tY = tickY.current;
+      const btns = btnRefs.current;
+      if (!secs.length) return;
+      const sy = window.scrollY;
+      const vh = window.innerHeight;
+      // active = the chapter covering the viewport centre
+      const center = sy + vh / 2;
+      let activeIdx = 0;
+      for (let i = 0; i < secs.length; i++) if (secs[i].top <= center) activeIdx = i;
+      // colour each tick by the section directly behind it
+      for (let i = 0; i < btns.length; i++) {
+        const b = btns[i];
+        if (!b) continue;
+        const dy = sy + (tY[i] ?? vh / 2);
+        let s = 0;
+        for (let j = 0; j < secs.length; j++) if (secs[j].top <= dy) s = j;
+        const lit = secs[s].light ? "true" : "false";
+        if (b.dataset.lit !== lit) b.dataset.lit = lit;
+        const act = i === activeIdx ? "true" : "false";
+        if (b.dataset.active !== act) b.dataset.active = act;
+      }
+    };
+
+    let raf = 0;
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; compute(); }); };
+    const remeasure = () => { measure(); schedule(); };
+
+    measure();
+    compute();
+    const t1 = setTimeout(remeasure, 400);
+    const t2 = setTimeout(remeasure, 1400);
+
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", remeasure);
+    const ro = new ResizeObserver(remeasure);
+    ro.observe(document.body);
+
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", remeasure);
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [chapters]);
 
   if (!chapters.length) return null;
 
   return (
-    <nav
-      aria-label="Глави"
+    <div
       data-chapter-rail
-      className="fixed left-5 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-4 mix-blend-difference xl:flex"
+      className="fixed left-5 top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-4 xl:flex"
     >
-      {chapters.map((c, i) => {
-        const isActive = i === active;
-        return (
-          <button
-            key={c.num}
-            type="button"
-            onClick={() =>
-              c.el.scrollIntoView({ behavior: "smooth", block: "start" })
-            }
-            aria-label={`Глава ${c.num} — ${c.label}`}
-            aria-current={isActive ? "true" : undefined}
-            className="group flex h-5 cursor-pointer items-center gap-3 text-white"
-          >
-            <span
-              className={`h-px bg-white transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                isActive ? "w-8 opacity-100" : "w-3.5 opacity-40 group-hover:w-5 group-hover:opacity-70"
-              }`}
-            />
-            <span
-              className={`label-fine whitespace-nowrap transition-all duration-500 ${
-                isActive
-                  ? "translate-x-0 opacity-80"
-                  : "-translate-x-1.5 opacity-0 group-hover:translate-x-0 group-hover:opacity-60"
-              }`}
-            >
-              {/* number always; the wordy label only on hover, so the rail
-                  never collides with section content on narrower desktops */}
-              {c.num}
-              <span className="hidden group-hover:inline"> · {c.label}</span>
-            </span>
-          </button>
-        );
-      })}
-    </nav>
+      {chapters.map((c, i) => (
+        <button
+          key={c.num}
+          ref={(el) => { btnRefs.current[i] = el; }}
+          type="button"
+          data-lit="false"
+          data-active="false"
+          onClick={() => c.el.scrollIntoView({ behavior: "smooth", block: "start" })}
+          aria-label={`Глава ${c.num} — ${c.label}`}
+          className="group flex h-5 cursor-pointer items-center gap-3"
+        >
+          <span className="rail-mark" />
+          <span className="rail-label label-fine">
+            {c.num}
+            <span className="hidden group-hover:inline"> · {c.label}</span>
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }

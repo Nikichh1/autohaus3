@@ -160,7 +160,7 @@ export function ConciergeScene({ copy = DEFAULT_COPY }: { copy?: ConciergeCopy }
         {/* ── Left: the ask ── */}
         <div className="max-w-xl">
           <FadeIn>
-            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-accent">]</span></p>
+            <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-racing">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-racing">]</span></p>
           </FadeIn>
           <h2
             ref={headRef}

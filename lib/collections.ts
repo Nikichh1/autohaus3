@@ -2,7 +2,7 @@ import type { Collection } from "@/types";
 
 export type CollectionMeta = {
   slug: Collection;
-  label: string; // luxury sub-brand name (kept in Latin, like AMG / M)
+  label: string; // collection name, Bulgarian
   index: string; // ordinal marker
   kicker: string; // short Bulgarian descriptor
   tagline: string;
@@ -16,7 +16,7 @@ export type CollectionMeta = {
 export const collections: CollectionMeta[] = [
   {
     slug: "performance",
-    label: "Performance",
+    label: "Спортни",
     index: "01",
     kicker: "Спортни и суперавтомобили",
     tagline: "Създадени за пистата, опитомени за пътя.",
@@ -25,7 +25,7 @@ export const collections: CollectionMeta[] = [
   },
   {
     slug: "executive",
-    label: "Executive",
+    label: "Луксозни",
     index: "02",
     kicker: "Луксозни флагмани",
     tagline: "Лукс, който пристига преди вас.",
@@ -34,7 +34,7 @@ export const collections: CollectionMeta[] = [
   },
   {
     slug: "signature",
-    label: "Signature",
+    label: "Ежедневни",
     index: "03",
     kicker: "Премиум за всеки ден",
     tagline: "Ежедневен лукс, подбран с грижа.",

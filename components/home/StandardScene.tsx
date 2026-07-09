@@ -79,7 +79,7 @@ export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) 
           {/* Left — the argument + the sealed guarantee */}
           <div className="lg:col-span-5">
             <FadeIn>
-              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-accent">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-accent">]</span></p>
+              <p className="label-fine text-fg-subtle"><span aria-hidden className="mr-2 text-racing">[</span>{copy.eyebrow}<span aria-hidden className="ml-2 text-racing">]</span></p>
             </FadeIn>
             <Reveal>
               <h2 className="mt-6 font-display text-[clamp(2.1rem,9vw,3.25rem)] font-extrabold leading-[1.02] tracking-tight text-fg md:text-[clamp(2.4rem,4.2vw,4rem)] md:leading-[0.96]">

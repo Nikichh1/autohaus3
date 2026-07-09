@@ -45,7 +45,7 @@ export default async function VehiclesPage() {
           </FadeIn>
           <Reveal>
             <h1 className="mt-6 font-display text-display-sm font-extrabold leading-[0.95] tracking-tight text-fg md:text-display-md xl:text-display-lg">
-              Намерете своята.
+              Намерете своята<span className="text-racing">.</span>
             </h1>
           </Reveal>
           <FadeIn delay={0.18}>

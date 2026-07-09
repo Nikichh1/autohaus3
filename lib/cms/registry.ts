@@ -22,6 +22,7 @@ export type ContentGroupId =
   | "home_intro"
   | "home_collection"
   | "home_manifesto"
+  | "home_machine"
   | "home_concierge"
   | "home_standard"
   | "home_house"
@@ -33,6 +34,7 @@ export const CONTENT_GROUPS: { id: ContentGroupId; label: string; description?: 
   { id: "home_intro", label: "Начало — Въведение", description: "Първият екран на телефон: етикет и водещото послание." },
   { id: "home_collection", label: "Начало — Колекция", description: "Секцията с подбраните автомобили." },
   { id: "home_manifesto", label: "Начало — Философия", description: "Изявлението, което се проявява дума по дума." },
+  { id: "home_machine", label: "Начало — Машината", description: "Скрол-филмът с колата и телеметрията." },
   { id: "home_concierge", label: "Начало — Издирване", description: "Издирване и внос по поръчка." },
   { id: "home_standard", label: "Начало — Стандартът", description: "Гаранциите и проверката." },
   { id: "home_house", label: "Начало — Изживяването", description: "Шоурум, спа и кафе." },
@@ -106,6 +108,24 @@ export const CONTENT_FIELDS: ContentField[] = [
     default:
       "Не просто автосалон — дом за машини с характер. Всяка е подбрана, проверена и готова за пътя.",
     help: "Проявява се дума по дума при скролване.",
+  },
+
+  // ── Начало — Машината (MachineScene) ──
+  {
+    key: "home.machine.title",
+    group: "home_machine",
+    label: "Заглавие",
+    type: "text",
+    default: "Създадени за движение.",
+    help: "Всяка дума се проявява последователно при скролване (на десктоп — на отделен ред).",
+  },
+  {
+    key: "home.machine.subcopy",
+    group: "home_machine",
+    label: "Подзаглавие",
+    type: "textarea",
+    default:
+      "Силует, мощност и баланс в перфектна хармония — усещате я още преди да запалите двигателя.",
   },
 
   // ── Начало — Издирване (ConciergeScene) ──
@@ -261,6 +281,7 @@ export const GROUP_ROUTES: Record<ContentGroupId, string[]> = {
   home_intro: ["/"],
   home_collection: ["/"],
   home_manifesto: ["/"],
+  home_machine: ["/"],
   home_concierge: ["/"],
   home_standard: ["/"],
   home_house: ["/"],

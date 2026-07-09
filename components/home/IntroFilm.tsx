@@ -505,9 +505,9 @@ function ProofBeat({ progress }: { progress: MotionValue<number> }) {
       className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center will-change-[transform,filter,opacity]"
     >
       <p className="label-fine text-white/70">
-        <span aria-hidden className="mr-2 text-accent">[</span>
+        <span aria-hidden className="mr-2 text-racing">[</span>
         Доказано с годините
-        <span aria-hidden className="ml-2 text-accent">]</span>
+        <span aria-hidden className="ml-2 text-racing">]</span>
       </p>
       <div className="relative mt-7 flex flex-col items-stretch gap-6 px-8 py-7 sm:flex-row sm:gap-0 sm:px-10 md:px-14">
         {/* corner ticks */}
@@ -570,9 +570,9 @@ function WelcomeBeat({ progress }: { progress: MotionValue<number> }) {
       className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center will-change-[transform,filter,opacity]"
     >
       <p className="label-fine text-white/70">
-        <span aria-hidden className="mr-2 text-accent">[</span>
+        <span aria-hidden className="mr-2 text-racing">[</span>
         Добре дошли
-        <span aria-hidden className="ml-2 text-accent">]</span>
+        <span aria-hidden className="ml-2 text-racing">]</span>
       </p>
       <p className="mt-5 font-display text-[clamp(2rem,5.5vw,4.6rem)] font-extrabold leading-[1] tracking-[-0.03em] text-white [text-shadow:0_2px_28px_rgba(0,0,0,0.5)]">
         Колекцията ви очаква<span className="text-accent">.</span>

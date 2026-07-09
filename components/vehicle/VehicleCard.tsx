@@ -19,6 +19,9 @@ type VehicleCardProps = {
  */
 export function VehicleCard({ vehicle, priority, className }: VehicleCardProps) {
   const hasSecond = vehicle.images.length > 1;
+  // Racing DNA surfaces only for the Performance collection — a quiet titanium
+  // card for everything else, a motorsport-marked one here. That's the contrast.
+  const isPerformance = vehicle.collection === "performance";
 
   return (
     <TiltCard max={3} className={className}>
@@ -100,9 +103,16 @@ export function VehicleCard({ vehicle, priority, className }: VehicleCardProps) 
             <p className="eyebrow text-fg-subtle">
               {vehicle.brand} · {vehicle.year}
             </p>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
-              {vehicle.bodyType}
-            </p>
+            {isPerformance ? (
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-[4px] border border-racing/40 bg-racing/[0.07] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-racing">
+                <span aria-hidden className="race-led size-1 rounded-full bg-racing" />
+                Спортна серия
+              </span>
+            ) : (
+              <p className="text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
+                {vehicle.bodyType}
+              </p>
+            )}
           </div>
 
           {/* Reserve two lines so a 1-line name and a 2-line name leave their

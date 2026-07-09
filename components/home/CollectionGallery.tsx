@@ -56,11 +56,15 @@ export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Prop
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-xl">
             <FadeIn>
-              <p className="label-fine text-fg-subtle">[ {copy.eyebrow} ]</p>
+              <p className="label-fine text-fg-subtle">
+                <span aria-hidden className="mr-2 text-racing">[</span>
+                {copy.eyebrow}
+                <span aria-hidden className="ml-2 text-racing">]</span>
+              </p>
             </FadeIn>
             <Reveal>
               <h2 className="mt-4 font-display text-[clamp(2.4rem,4.6vw,4.4rem)] font-extrabold leading-[0.94] tracking-[-0.035em] text-fg">
-                {copy.heading}<span className="text-fg-muted">.</span>
+                {copy.heading}<span className="text-racing">.</span>
               </h2>
             </Reveal>
             <FadeIn delay={0.1}>
