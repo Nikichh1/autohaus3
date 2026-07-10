@@ -37,7 +37,7 @@ export function PlaceholderPage({
         className="pointer-events-none absolute -right-[10%] top-[28%] w-[80%] max-w-none opacity-[0.035]"
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-wide px-4 pt-32 pb-24 md:px-8 xl:px-12">
+      <div className="relative z-10 mx-auto w-full max-w-wide px-5 pt-32 pb-24 md:px-8 xl:px-12">
         <div className="max-w-2xl">
           <p className="flex items-center gap-3 text-accent">
             <span className="h-px w-8 bg-accent/50" />

@@ -78,7 +78,12 @@ export function MobileMenu({
           >
             {/* Header */}
             <div className="flex h-20 items-center justify-between px-5">
-              <Link href="/" onClick={onClose} aria-label="AutoHaus — Начало">
+              <Link
+                href="/"
+                onClick={onClose}
+                aria-label="AutoHaus — Начало"
+                className="-my-2 flex items-center py-2 active:opacity-70"
+              >
                 <Image src="/brand/logo.svg" alt="AutoHaus" width={140} height={25} unoptimized className="h-6 w-auto" />
               </Link>
               <button

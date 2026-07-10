@@ -56,9 +56,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#08090c",
   width: "device-width",
   initialScale: 1,
+  // Extend the page under the notch / home indicator on phones — the dark
+  // canvas paints edge-to-edge and every `env(safe-area-inset-*)` padding in
+  // the mobile menu, filter drawer and sticky bars becomes live (they are all
+  // written with max() fallbacks, so nothing changes on devices without insets).
+  viewportFit: "cover",
 };
 
 /**

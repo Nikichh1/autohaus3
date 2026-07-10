@@ -100,10 +100,9 @@ export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Prop
           </FadeIn>
         </div>
 
-        {/* Mobile view-all */}
-        <div className="mt-10 flex justify-center md:hidden">
-          <ViewAllLink total={total} />
-        </div>
+        {/* The closing bento CTA tile already carries the mobile "view all"
+            action; a second pill here only duplicated it AND sat in the seam
+            where the next section's sheet rides up over it. */}
       </div>
     </section>
   );
@@ -121,7 +120,7 @@ function VehicleTile({ v, feature }: { v: Vehicle; feature?: boolean }) {
       onMouseLeave={() => setDyno(false)}
       className="group relative block h-full"
     >
-      <div className="sheen edge-light relative aspect-[16/11] w-full overflow-hidden rounded-xl bg-elevated shadow-luxe transition-shadow duration-500 group-hover:shadow-[0_40px_90px_-40px_rgba(10,12,16,0.55)] lg:aspect-auto lg:h-full">
+      <div className="sheen edge-light relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-elevated shadow-luxe transition-shadow duration-500 group-hover:shadow-[0_40px_90px_-40px_rgba(10,12,16,0.55)] sm:aspect-[16/11] lg:aspect-auto lg:h-full">
         <Image
           src={v.images[0]}
           alt={`${v.brand} ${v.model}`}
@@ -147,8 +146,11 @@ function VehicleTile({ v, feature }: { v: Vehicle; feature?: boolean }) {
 
         {/* bottom: name + price + spec row */}
         <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
+          {/* Phones stack name → price so the pill can never ride over the
+              model name on a narrow tile; md+ keeps the original side-by-side
+              row (name left, price right, aligned to the same baseline). */}
+          <div className="flex flex-col items-start gap-2.5 md:flex-row md:items-end md:justify-between md:gap-3">
+            <div className="min-w-0 max-md:w-full">
               <p className="label-fine text-white/60">{v.year}</p>
               {/* Phones wrap to two lines instead of chopping the model name
                   ("Range Rove…"); md+ keeps the original single-line truncate. */}

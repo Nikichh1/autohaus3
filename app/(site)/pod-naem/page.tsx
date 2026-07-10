@@ -84,7 +84,7 @@ export default async function RentalPage() {
         </div>
 
         <div className="relative z-10 w-full pb-14 md:pb-20">
-          <div className="mx-auto w-full max-w-wide px-4 md:px-8 xl:px-12">
+          <div className="mx-auto w-full max-w-wide px-5 md:px-8 xl:px-12">
             <Reveal>
               <p className="flex items-center gap-3 text-accent">
                 <span className="h-px w-8 bg-accent/50" />
@@ -128,7 +128,7 @@ export default async function RentalPage() {
 
       {/* ── Fleet ── */}
       <section id="fleet" className="scroll-mt-24 py-[14vh]">
-        <div className="mx-auto max-w-wide px-4 md:px-8 xl:px-12">
+        <div className="mx-auto max-w-wide px-5 md:px-8 xl:px-12">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
               <FadeIn>
@@ -160,7 +160,7 @@ export default async function RentalPage() {
 
       {/* ── How it works ── */}
       <section className="bg-surface py-[14vh]">
-        <div className="mx-auto max-w-wide px-4 md:px-8 xl:px-12">
+        <div className="mx-auto max-w-wide px-5 md:px-8 xl:px-12">
           <div className="max-w-2xl">
             <FadeIn>
               <ChapterLabel index="02" label="Процесът" />
@@ -205,7 +205,7 @@ export default async function RentalPage() {
               "radial-gradient(55% 60% at 50% 40%, rgba(201,207,214,0.12), transparent 62%)",
           }}
         />
-        <div className="relative z-10 mx-auto max-w-wide px-4 text-center md:px-8">
+        <div className="relative z-10 mx-auto max-w-wide px-5 text-center md:px-8">
           <FadeIn>
             <p className="flex items-center justify-center gap-3 text-accent">
               <span className="h-px w-8 bg-accent/50" />
@@ -230,7 +230,7 @@ export default async function RentalPage() {
               </ButtonLink>
               <a
                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
-                className="group inline-flex items-center gap-2 text-sm font-medium text-fg transition-colors hover:text-accent"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-fg transition-colors hover:text-accent active:opacity-70 max-md:min-h-11"
               >
                 {contactInfo.phone}
                 <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

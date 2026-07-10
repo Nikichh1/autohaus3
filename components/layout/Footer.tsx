@@ -22,7 +22,10 @@ export async function Footer() {
   const { contact, social, branding } = await getSettings();
   return (
     <footer className="border-t border-line bg-base">
-      <div className="mx-auto max-w-(--container-wide) px-4 pb-12 pt-24 md:px-8 md:pt-32 xl:px-12">
+      <div
+        className="mx-auto max-w-(--container-wide) px-5 pt-24 md:px-8 md:pt-32 xl:px-12"
+        style={{ paddingBottom: "max(3rem, calc(2rem + env(safe-area-inset-bottom)))" }}
+      >
         {/* Phones: brand and contacts full-width, the two link columns side by
             side — half the scroll, same hierarchy. md+ is untouched. */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:gap-12">

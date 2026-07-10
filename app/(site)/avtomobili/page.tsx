@@ -35,7 +35,7 @@ export default async function VehiclesPage() {
       />
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent" />
 
-      <div className="relative mx-auto max-w-wide px-4 pb-32 pt-32 md:px-8 md:pt-40 xl:px-12">
+      <div className="relative mx-auto max-w-wide px-5 pb-32 pt-32 md:px-8 md:pt-40 xl:px-12">
         <header className="mb-14 max-w-3xl md:mb-20">
           <FadeIn>
             <p className="flex items-center gap-3 text-accent">

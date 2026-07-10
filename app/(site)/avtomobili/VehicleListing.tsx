@@ -206,7 +206,10 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
             className="field-graphite fixed inset-0 z-[60] flex flex-col lg:hidden"
             data-lenis-prevent
           >
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6">
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain px-5 py-6"
+              style={{ paddingTop: "max(1.5rem, env(safe-area-inset-top))" }}
+            >
               <FilterSidebar
                 filters={filters}
                 counts={counts}
@@ -221,7 +224,7 @@ export function VehicleListing({ vehicles }: VehicleListingProps) {
             </div>
             {/* Sticky apply bar — always reachable, clear of the home indicator */}
             <div
-              className="border-t border-line-strong bg-base/85 px-4 pt-4 backdrop-blur-xl"
+              className="border-t border-line-strong bg-base/85 px-5 pt-4 backdrop-blur-xl"
               style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
             >
               <button
@@ -447,7 +450,7 @@ function ActiveFilterPills({
           key={i}
           type="button"
           onClick={p.onRemove}
-          className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-accent hover:text-accent max-md:min-h-9 max-md:px-3.5"
+          className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/[0.03] px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-accent hover:text-accent max-md:min-h-10 max-md:px-3.5"
         >
           {p.label}
           <span className="text-[16px] leading-none">×</span>
@@ -456,7 +459,7 @@ function ActiveFilterPills({
       <button
         type="button"
         onClick={onClear}
-        className="ml-2 text-xs uppercase tracking-wider text-fg-subtle underline-offset-4 hover:text-fg-muted hover:underline max-md:min-h-9"
+        className="ml-2 text-xs uppercase tracking-wider text-fg-subtle underline-offset-4 hover:text-fg-muted hover:underline max-md:min-h-10"
       >
         Изчисти всички
       </button>

@@ -390,11 +390,14 @@ function TachCluster({
   reduce,
   soundOn,
   onToggleSound,
+  extra,
 }: {
   progress: MotionValue<number>;
   reduce: boolean;
   soundOn: boolean;
   onToggleSound: () => void;
+  /** Extra control rendered after the readout strip (the phone throttle). */
+  extra?: React.ReactNode;
 }) {
   const rpmRaw = useTransform(progress, (p) =>
     reduce ? RPM_IDLE : RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE),
@@ -473,17 +476,21 @@ function TachCluster({
 
         <div className="relative p-5">
           {/* header — live marker + the engine-sound toggle */}
-          <div className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2">
-              <span aria-hidden className="race-led size-1.5 rounded-full bg-racing" />
-              <span className="label-fine text-[9px] text-fg-muted">Телеметрия · На живо</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex min-w-0 items-center gap-2">
+              <span aria-hidden className="race-led size-1.5 shrink-0 rounded-full bg-racing" />
+              {/* Phone pod is narrow — the pulsing LED already reads "live", so
+                  the "· На живо" suffix only shows on the wider desktop rail. */}
+              <span className="label-fine whitespace-nowrap text-[9px] text-fg-muted">
+                Телеметрия<span className="hidden lg:inline"> · На живо</span>
+              </span>
             </span>
             <SoundToggle on={soundOn} onClick={onToggleSound} />
           </div>
 
-          <div className="mt-4 flex items-center gap-6">
+          <div className="mt-4 flex items-center gap-6 max-lg:flex-wrap max-lg:justify-center max-lg:gap-x-4 max-lg:gap-y-5">
             {/* dial */}
-            <div ref={dialRef} className="relative w-[150px] shrink-0 xl:w-[166px]">
+            <div ref={dialRef} className="relative w-[132px] shrink-0 lg:w-[150px] xl:w-[166px]">
               <svg viewBox="0 0 200 118" fill="none" aria-hidden className="w-full text-fg-muted">
                 {/* track */}
                 <path d={`M ${ax} ${ay} A 80 80 0 1 1 ${bx} ${by}`} stroke="rgb(245 247 249 / 0.14)" strokeWidth={3} />
@@ -549,14 +556,14 @@ function TachCluster({
             </div>
 
             {/* shift lights + gear box */}
-            <div className="min-w-0 flex-1">
-              <div className="mb-3 flex items-center gap-1.5">
+            <div className="flex-1 max-lg:min-w-[7.75rem] lg:min-w-0">
+              <div className="mb-3 flex items-center gap-1 lg:gap-1.5">
                 {Array.from({ length: 8 }, (_, i) => (
                   <ShiftLed key={i} index={i} rpm={rpm} />
                 ))}
               </div>
               <div className="flex items-baseline gap-2.5">
-                <motion.span className="font-display text-6xl font-extrabold leading-none tabular-nums text-fg">
+                <motion.span className="font-display text-5xl font-extrabold leading-none tabular-nums text-fg lg:text-6xl">
                   {gearNum}
                 </motion.span>
                 <span className="label-fine text-fg-muted">предавка</span>
@@ -570,6 +577,8 @@ function TachCluster({
             <Readout label="Волтаж" value={voltText} unit="V" divided />
             <Readout label="Масло" value={oilText} unit="°C" divided />
           </div>
+
+          {extra}
         </div>
       </div>
     </div>
@@ -611,7 +620,7 @@ function ShiftLed({ index, rpm }: { index: number; rpm: MotionValue<number> }) {
   return (
     <motion.span
       style={{ opacity: on, background: color, boxShadow: `0 0 8px ${color}66` }}
-      className="h-1.5 w-4 rounded-[2px]"
+      className="h-1.5 w-3 rounded-[2px] lg:w-4"
     />
   );
 }
@@ -666,71 +675,14 @@ function SoundToggle({ on, onClick }: { on: boolean; onClick: () => void }) {
   );
 }
 
-/** Compact shift cluster for phones — the same living gearbox (LEDs, gear,
- *  sprung revs) so mobile keeps the scene's signature, in one slim row. */
-function MiniCluster({ progress }: { progress: MotionValue<number> }) {
-  const rpmRaw = useTransform(progress, (p) => RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
-  const rpm = useSpring(rpmRaw, { stiffness: 160, damping: 19, mass: 0.55 });
-  const gearNum = useTransform(progress, (p) => String(gearT(p).gear));
-  const rpmText = useTransform(rpm, (v) => (v / 1000).toFixed(1));
-  return (
-    <div className="mb-5 flex items-center gap-4 rounded-full border border-line bg-base/40 px-4 py-2.5 backdrop-blur-md">
-      <span className="flex items-center gap-1">
-        {Array.from({ length: 8 }, (_, i) => (
-          <ShiftLed key={i} index={i} rpm={rpm} />
-        ))}
-      </span>
-      <span className="flex items-baseline gap-1.5">
-        <motion.span className="font-display text-xl font-extrabold leading-none tabular-nums text-fg">
-          {gearNum}
-        </motion.span>
-        <span className="label-fine text-fg-muted">пр.</span>
-      </span>
-      <span className="flex items-baseline gap-1">
-        <motion.span className="font-display text-sm font-bold tabular-nums text-fg/80">
-          {rpmText}
-        </motion.span>
-        <span className="label-fine text-fg-subtle">×1000</span>
-      </span>
-    </div>
-  );
-}
-
-/* ── The three qualities — silhouette, power, balance. Kept on phones, where
-   there is no film: an index, a word, a line, revealed once on entry. */
-
-const PILLARS: [string, string][] = [
-  ["Силует", "Форма, родена от вятъра."],
-  ["Мощност", "Характер, който усещате."],
-  ["Баланс", "Контрол във всеки завой."],
-];
-
-function PillarsStatic() {
-  return (
-    <div className="mt-9 grid w-full max-w-md grid-cols-3 gap-x-3 border-t border-line pt-6 text-left">
-      {PILLARS.map(([title, sub], i) => (
-        <motion.div
-          key={title}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.6, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <span className="label-fine text-accent">0{i + 1}</span>
-          <p className="mt-1.5 font-display text-base font-bold tracking-tight text-fg">{title}</p>
-          <p className="mt-1 text-[11px] leading-relaxed text-fg/55">{sub}</p>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
 /**
- * The mobile Machine — purpose-built: one cinematic still with the engine
- * idling in the cluster (revs breathing around 1.5k, gear 1, first light
- * flickering), the statement, and the three qualities. No pin, no canvas,
- * no frame downloads — instant and fluid, while keeping the living-gearbox
- * signature.
+ * The mobile Machine — the cockpit in your hand. Instead of the scroll film
+ * (never downloaded on phones), the scene becomes a tactile instrument: the
+ * M-car staring out of the dark, the full R-Telemetry pod idling beneath it —
+ * and a real throttle. Hold it and the needle sweeps through all six gears,
+ * the shift lights walk titanium → amber → red, the speed climbs, the phone
+ * ticks at every shift and (opt-in) the engine howls; let go and the revs
+ * fall home. No pin, no canvas, no frame downloads — one image and physics.
  */
 function MobileMachine({
   chapter = true,
@@ -741,9 +693,20 @@ function MobileMachine({
 }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
-  // The idle loop runs ONLY while the scene is near the viewport — an
-  // infinite animation must never tick under the rest of the page.
+  // Everything live runs ONLY while the scene is near the viewport — an
+  // infinite idle animation must never tick under the rest of the page.
   const onScreen = useInView(ref, { margin: "25% 0px 25% 0px" });
+
+  const [soundOn, setSoundOn] = useState(false);
+  const soundOnRef = useRef(false);
+  const [held, setHeld] = useState(false);
+
+  // The throttle — 0..1 across all six gears (same mapping as the desktop
+  // scroll). Held: a steady linear pull; released: a fast fall with settle.
+  const throttle = useMotionValue(0);
+  const throttleCtrl = useRef<ReturnType<typeof animate> | null>(null);
+
+  // Idle breathing — the engine never sits dead still.
   const idle = useMotionValue(0.004);
   useEffect(() => {
     if (reduce || !onScreen) return;
@@ -755,6 +718,73 @@ function MobileMachine({
     return () => ctrl.stop();
   }, [idle, reduce, onScreen]);
 
+  // The cluster reads whichever is higher: your right foot or the idle.
+  const progress = useTransform([throttle, idle], ([t, i]: number[]) =>
+    Math.max(t, i),
+  );
+
+  const pressThrottle = () => {
+    if (reduce) return;
+    setHeld(true);
+    throttleCtrl.current?.stop();
+    throttleCtrl.current = animate(throttle, 1, {
+      duration: Math.max(0.4, 3.8 * (1 - throttle.get())),
+      ease: "linear",
+    });
+  };
+  const liftThrottle = () => {
+    setHeld(false);
+    throttleCtrl.current?.stop();
+    throttleCtrl.current = animate(throttle, 0, {
+      duration: 1.3,
+      ease: [0.16, 1, 0.3, 1],
+    });
+  };
+
+  // Engine sound follows the same revs the needle shows (opt-in, gesture-armed).
+  useEffect(
+    () =>
+      progress.on("change", (p) => {
+        if (soundOnRef.current)
+          machineEngine.setRpm(RPM_IDLE + gearT(p).t * (REDLINE - RPM_IDLE));
+      }),
+    [progress],
+  );
+
+  // A soft tick at every gear shift — the phone shifts with you.
+  const lastGear = useRef(1);
+  useEffect(
+    () =>
+      progress.on("change", (p) => {
+        const g = gearT(p).gear;
+        if (g !== lastGear.current) {
+          lastGear.current = g;
+          try {
+            navigator.vibrate?.(12);
+          } catch {
+            /* haptics are a bonus, never a requirement */
+          }
+        }
+      }),
+    [progress],
+  );
+
+  const toggleSound = () => {
+    if (soundOnRef.current) {
+      machineEngine.stop();
+      soundOnRef.current = false;
+      setSoundOn(false);
+    } else if (machineEngine.start()) {
+      soundOnRef.current = true;
+      setSoundOn(true);
+      machineEngine.setActive(onScreen);
+    }
+  };
+  useEffect(() => {
+    if (soundOnRef.current) machineEngine.setActive(onScreen);
+  }, [onScreen]);
+  useEffect(() => () => machineEngine.stop(), []);
+
   return (
     <section
       ref={ref}
@@ -762,39 +792,131 @@ function MobileMachine({
       data-chapter-label={chapter ? "Машината" : undefined}
       className="sheet relative -mt-[10vh] bg-base text-fg"
     >
-      <div className="relative flex min-h-[94svh] flex-col justify-end overflow-hidden rounded-[inherit] pb-16">
-        {/* one slow cinematic settle as the scene enters — a filmed shot */}
-        <motion.img
-          src="/feature/poster.jpg"
-          alt=""
-          aria-hidden
-          loading="lazy"
-          decoding="async"
-          initial={reduce ? false : { scale: 1.12 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 8, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <CinematicGrade />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-base via-base/25 to-base/55" />
+      <div className="relative flex min-h-[100svh] flex-col overflow-hidden rounded-[inherit]">
+        {/* Top — the machine's lit face, framed so it actually reads (was a
+            black void before: the old full-bleed crop showed only the dark
+            hood). The photo fades down into the graphite so the title lands
+            on ink, not on the car. */}
+        <div className="relative h-[46svh] min-h-[300px] w-full overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/cars/m4-comp-828.webp"
+            srcSet="/cars/m4-comp-640.webp 640w, /cars/m4-comp-828.webp 828w, /cars/m4-comp-1080.webp 1080w"
+            sizes="100vw"
+            alt=""
+            aria-hidden
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-[center_54%]"
+          />
+          <CinematicGrade />
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-t from-base via-base/15 to-base/30"
+          />
+          <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-6">
+            <p className="label-fine text-fg/80">
+              <span aria-hidden className="mr-2 text-racing">[</span>
+              03 · Машината
+              <span aria-hidden className="ml-2 text-racing">]</span>
+            </p>
+            <h2 className="mt-3 font-display text-[clamp(1.9rem,7.5vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-fg [text-shadow:0_2px_24px_rgba(0,0,0,0.55)]">
+              {copy.title}
+            </h2>
+          </div>
+        </div>
 
-        <div className="relative z-10 flex flex-col items-center px-5 text-center">
-          <p className="label-fine mb-5 text-fg/80">
-            <span aria-hidden className="mr-2 text-racing">[</span>
-            03 · Машината
-            <span aria-hidden className="ml-2 text-racing">]</span>
-          </p>
-          <MiniCluster progress={idle} />
-          <h2 className="font-display text-[clamp(1.9rem,7.5vw,3rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-fg">
-            {copy.title}
-          </h2>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-fg/75">
+        {/* Bottom — the statement + the living cockpit, on solid graphite. */}
+        <div className="relative z-10 px-5 pb-14 pt-6">
+          <p className="max-w-md text-sm leading-relaxed text-fg/75">
             {copy.subcopy}
           </p>
-          <PillarsStatic />
+
+          {/* The living cockpit — same pod as the desktop rail, plus the pedal. */}
+          <div className="mt-7">
+            <TachCluster
+              progress={progress}
+              reduce={!!reduce}
+              soundOn={soundOn}
+              onToggleSound={toggleSound}
+              extra={
+                reduce ? undefined : (
+                  <ThrottlePedal
+                    held={held}
+                    throttle={throttle}
+                    onPress={pressThrottle}
+                    onLift={liftThrottle}
+                  />
+                )
+              }
+            />
+          </div>
         </div>
       </div>
     </section>
+  );
+}
+
+/** The right foot — press and hold to pull the revs through all six gears;
+ *  lift and they fall home. A red throttle-position bar fills underfoot.
+ *  touch-none keeps the hold from fighting the page scroll. */
+function ThrottlePedal({
+  held,
+  throttle,
+  onPress,
+  onLift,
+}: {
+  held: boolean;
+  throttle: MotionValue<number>;
+  onPress: () => void;
+  onLift: () => void;
+}) {
+  const keyHeld = useRef(false);
+  return (
+    <button
+      type="button"
+      aria-pressed={held}
+      aria-label="Задръжте за газ — форсирайте двигателя"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        onPress();
+      }}
+      onPointerUp={onLift}
+      onPointerLeave={onLift}
+      onPointerCancel={onLift}
+      onContextMenu={(e) => e.preventDefault()}
+      onKeyDown={(e) => {
+        if ((e.key === " " || e.key === "Enter") && !keyHeld.current) {
+          e.preventDefault();
+          keyHeld.current = true;
+          onPress();
+        }
+      }}
+      onKeyUp={(e) => {
+        if (e.key === " " || e.key === "Enter") {
+          keyHeld.current = false;
+          onLift();
+        }
+      }}
+      className={`relative mt-5 flex h-14 w-full touch-none select-none items-center justify-center gap-2.5 overflow-hidden rounded-[10px] border transition-colors duration-300 [-webkit-touch-callout:none] ${
+        held
+          ? "border-racing/60 text-white"
+          : "border-white/15 bg-white/[0.04] text-fg"
+      }`}
+    >
+      {/* throttle-position fill — chases your foot */}
+      <motion.span
+        aria-hidden
+        style={{ scaleX: throttle }}
+        className="absolute inset-0 origin-left bg-racing/20"
+      />
+      <span
+        aria-hidden
+        className={`race-led size-1.5 rounded-full bg-racing transition-opacity ${held ? "opacity-100" : "opacity-60"}`}
+      />
+      <span className="relative z-10 font-display text-sm font-bold tracking-tight">
+        {held ? "Газ до пода" : "Задръжте за газ"}
+      </span>
+    </button>
   );
 }

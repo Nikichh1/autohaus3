@@ -196,7 +196,7 @@ export function ConciergeScene({ copy = DEFAULT_COPY }: { copy?: ConciergeCopy }
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
                 <a
                   href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-fg transition-colors hover:text-accent"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-fg transition-colors hover:text-accent active:opacity-70 max-md:-my-2 max-md:min-h-11 max-md:py-2"
                 >
                   <Phone className="size-4" strokeWidth={1.7} />
                   <span className="tabular-nums">{contactInfo.phone}</span>

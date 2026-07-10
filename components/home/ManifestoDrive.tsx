@@ -9,8 +9,8 @@ import {
   cubicBezier,
   type MotionValue,
 } from "framer-motion";
-import { FadeIn } from "@/components/motion/FadeIn";
 const REVEAL_EASE = cubicBezier(0.45, 0, 0.55, 1);
+const ENTRANCE_EASE = cubicBezier(0.16, 1, 0.3, 1);
 
 const DEFAULT_STATEMENT =
   "Не просто автосалон — дом за машини с характер. Всяка е подбрана, проверена и готова за пътя.";
@@ -52,58 +52,13 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
 
   return (
     <>
-    {/* ── Phones: the manifesto as a still — the same statement, machined
-        type and streamlines, but no pin, no scrub, no per-word blur. The
-        pinned scene ships SSR'd with every word at blur(10px)/30% opacity,
-        which reads as a broken smear on a phone until far into the scrub. */}
+    {/* ── Phones: the manifesto plays as ONE cinematic beat when it scrolls
+        into view — the same machined blur-to-focus, word-by-word grammar as
+        desktop, but triggered once (never scrubbed, never SSR'd mid-blur) and
+        the wind-tunnel streamlines draw in beneath it. */}
     {/* No data-chapter here — the chapter rail is desktop-only and must keep
         exactly one owner of "02" (the pinned section below). */}
-    <section
-      aria-label="Философия"
-      className="sheet field-graphite relative -mt-[8vh] overflow-hidden md:hidden"
-    >
-      <div aria-hidden className="brushed pointer-events-none absolute inset-0 opacity-[0.05]" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 44% at 86% 8%, rgba(201,207,214,0.1), transparent 64%)",
-        }}
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute right-[-2%] top-6 select-none font-display text-[26vw] font-extrabold leading-none tracking-tighter text-white/[0.03]"
-      >
-        02
-      </span>
-      <div className="relative z-10 px-5 pb-10 pt-20">
-        <FadeIn>
-          <p className="label-fine text-fg-subtle">
-            <span aria-hidden className="mr-2 text-racing">[</span>
-            02 · Философията на AutoHaus
-            <span aria-hidden className="ml-2 text-racing">]</span>
-          </p>
-        </FadeIn>
-        <FadeIn delay={0.1}>
-          <p className="text-titanium mt-7 font-display text-[1.8rem] font-extrabold leading-[1.18] tracking-tight">
-            {WORDS.join(" ")}
-          </p>
-        </FadeIn>
-      </div>
-      {/* static wind-tunnel signature under the statement */}
-      <svg
-        viewBox="0 0 1440 520"
-        preserveAspectRatio="xMidYMax slice"
-        fill="none"
-        aria-hidden
-        className="h-40 w-full text-accent/35 opacity-50"
-      >
-        {LINES.map((d) => (
-          <path key={d} d={d} stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
-        ))}
-      </svg>
-    </section>
+    <MobilePhilosophy words={WORDS} reduce={!!reduce} />
 
     <section
       ref={ref}
@@ -167,6 +122,157 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
       </div>
     </section>
     </>
+  );
+}
+
+/**
+ * The mobile Philosophy — the desktop scene's cinema, freed from the scroll
+ * pin. A full-height immersive beat: the same engineering atmosphere (brushed
+ * metal, a masked measurement grid, a titanium glow and the oversized "02"),
+ * the statement machining itself into focus word-group by word-group, and the
+ * wind-tunnel streamlines drawing across the floor — all fired once when the
+ * section enters (no scrub, no SSR smear). Reads like the PC, runs like a phone.
+ */
+function MobilePhilosophy({ words, reduce }: { words: string[]; reduce: boolean }) {
+  const chunks: string[] = [];
+  for (let i = 0; i < words.length; i += 3)
+    chunks.push(words.slice(i, i + 3).join(" "));
+
+  return (
+    <section
+      aria-label="Философия"
+      className="sheet field-graphite relative -mt-[8vh] flex min-h-[88svh] flex-col justify-center overflow-hidden md:hidden"
+    >
+      {/* atmosphere — brushed metal + masked measurement grid + titanium glow */}
+      <div aria-hidden className="brushed pointer-events-none absolute inset-0 opacity-[0.05]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(245,247,249,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(245,247,249,0.6) 1px, transparent 1px)",
+          backgroundSize: "62px 62px",
+          maskImage: "radial-gradient(90% 70% at 35% 42%, #000 25%, transparent 82%)",
+          WebkitMaskImage: "radial-gradient(90% 70% at 35% 42%, #000 25%, transparent 82%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(58% 42% at 84% 12%, rgba(201,207,214,0.14), transparent 62%)",
+        }}
+      />
+      {/* the oversized "02" watermark — drifts in as the beat lands */}
+      <motion.span
+        aria-hidden
+        initial={reduce ? false : { opacity: 0, x: 48 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 1.2, ease: ENTRANCE_EASE }}
+        className="pointer-events-none absolute right-[-4%] top-[7%] select-none font-display text-[40vw] font-extrabold leading-none tracking-tighter text-white/[0.035]"
+      >
+        02
+      </motion.span>
+
+      {/* wind-tunnel streamlines — airflow over an unseen machine, drawn across
+          the lower half as a full-bleed background element (like the PC scene) */}
+      <motion.div
+        aria-hidden
+        initial={reduce ? false : { x: -24 }}
+        whileInView={{ x: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 1.6, ease: ENTRANCE_EASE }}
+        className="pointer-events-none absolute inset-x-[-6%] bottom-0 h-[54%] opacity-60"
+      >
+        <motion.svg
+          viewBox="0 0 1440 520"
+          preserveAspectRatio="xMidYMax slice"
+          fill="none"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          className="h-full w-full text-accent/35"
+        >
+          {LINES.map((d, i) => (
+            <motion.path
+              key={d}
+              d={d}
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              variants={{
+                hidden: { pathLength: reduce ? 1 : 0, opacity: 0.12 },
+                show: {
+                  pathLength: 1,
+                  opacity: 1,
+                  transition: { duration: 1.4, delay: 0.2 + i * 0.14, ease: ENTRANCE_EASE },
+                },
+              }}
+            />
+          ))}
+          {/* measurement ticks along the floor — the wind-tunnel scale */}
+          {Array.from({ length: 24 }, (_, i) => (
+            <line
+              key={i}
+              x1={i * 62 + 10}
+              y1={506}
+              x2={i * 62 + 10}
+              y2={i % 4 === 0 ? 494 : 500}
+              stroke="currentColor"
+              strokeOpacity={0.5}
+              strokeWidth={1}
+            />
+          ))}
+        </motion.svg>
+      </motion.div>
+
+      {/* the statement — centred, machined into focus three words at a time */}
+      <div className="relative z-10 px-5 py-24">
+        <motion.p
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 0.6, ease: ENTRANCE_EASE }}
+          className="label-fine mb-8 text-fg-subtle"
+        >
+          <span aria-hidden className="mr-2 text-racing">[</span>
+          02 · Философията на AutoHaus
+          <span aria-hidden className="ml-2 text-racing">]</span>
+        </motion.p>
+
+        <motion.p
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          variants={{ show: { transition: { staggerChildren: 0.13, delayChildren: 0.16 } } }}
+          className="flex flex-wrap font-display text-[clamp(2rem,8.4vw,2.5rem)] font-extrabold leading-[1.14] tracking-tight"
+        >
+          {chunks.map((c, i) => (
+            <motion.span
+              key={i}
+              variants={{
+                hidden: {
+                  opacity: 0.22,
+                  y: reduce ? 0 : 16,
+                  filter: reduce ? "blur(0px)" : "blur(10px)",
+                },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  filter: "blur(0px)",
+                  transition: { duration: 0.85, ease: REVEAL_EASE },
+                },
+              }}
+              className="text-titanium mr-[0.28em] inline-block will-change-[filter,transform]"
+            >
+              {c}
+            </motion.span>
+          ))}
+        </motion.p>
+      </div>
+    </section>
   );
 }
 

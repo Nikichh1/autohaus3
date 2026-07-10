@@ -19,7 +19,7 @@ export function ServicePageTemplate({ service }: { service: Service }) {
       />
 
       {/* Intro */}
-      <section className="mx-auto max-w-wide px-4 py-24 md:px-8 md:py-32 xl:px-12">
+      <section className="mx-auto max-w-wide px-5 py-24 md:px-8 md:py-32 xl:px-12">
         <div className="max-w-3xl">
           <Reveal>
             <p className="font-serif text-2xl italic leading-relaxed text-fg md:text-display-2xs md:not-italic md:font-display md:font-semibold md:leading-tight">
@@ -36,7 +36,7 @@ export function ServicePageTemplate({ service }: { service: Service }) {
 
       {/* Offerings */}
       <section className="bg-surface">
-        <div className="mx-auto max-w-wide px-4 py-24 md:px-8 md:py-32 xl:px-12">
+        <div className="mx-auto max-w-wide px-5 py-24 md:px-8 md:py-32 xl:px-12">
           <div className="grid gap-12 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <FadeIn>
@@ -82,7 +82,7 @@ export function ServicePageTemplate({ service }: { service: Service }) {
               "radial-gradient(50% 80% at 15% 0%, rgba(201,207,214,0.1), transparent 60%)",
           }}
         />
-        <div className="relative mx-auto max-w-wide px-4 py-28 md:px-8 md:py-40 xl:px-12">
+        <div className="relative mx-auto max-w-wide px-5 py-28 md:px-8 md:py-40 xl:px-12">
           <div className="max-w-3xl">
             <FadeIn>
               <p className="flex items-center gap-3 text-accent">
@@ -125,7 +125,7 @@ function ContentSection({
   reversed: boolean;
 }) {
   return (
-    <section className="mx-auto max-w-wide px-4 py-16 md:px-8 md:py-24 xl:px-12">
+    <section className="mx-auto max-w-wide px-5 py-16 md:px-8 md:py-24 xl:px-12">
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         {section.image && (
           <ScrollTilt

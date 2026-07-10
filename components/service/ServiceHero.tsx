@@ -70,7 +70,7 @@ export function ServiceHero({ label, tagline, image }: ServiceHeroProps) {
       </div>
 
       <div className="relative z-10 w-full pb-20 md:pb-28">
-        <div className="mx-auto w-full max-w-wide px-4 md:px-8 xl:px-12">
+        <div className="mx-auto w-full max-w-wide px-5 md:px-8 xl:px-12">
           <Reveal>
             <p className="flex items-center gap-3 text-accent">
               <span className="h-px w-8 bg-accent/50" />

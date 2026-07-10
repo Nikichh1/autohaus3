@@ -100,7 +100,7 @@ export default async function ContactPage({
 
   return (
     <div className="pb-32 pt-32 md:pt-40">
-      <div className="mx-auto max-w-wide px-4 md:px-8 xl:px-12">
+      <div className="mx-auto max-w-wide px-5 md:px-8 xl:px-12">
         {/* Header */}
         <header className="max-w-3xl">
           <FadeIn>
@@ -148,7 +148,7 @@ export default async function ContactPage({
               <DetailRow icon={<Phone className="size-5" />} label="Телефон">
                 <a
                   href={`tel:${info.phone.replace(/\s/g, "")}`}
-                  className="transition-colors hover:text-accent"
+                  className="transition-colors hover:text-accent active:opacity-70 max-md:-my-1.5 max-md:inline-flex max-md:min-h-10 max-md:items-center max-md:py-1.5"
                 >
                   {info.phone}
                 </a>
@@ -157,7 +157,7 @@ export default async function ContactPage({
               <DetailRow icon={<Mail className="size-5" />} label="Имейл">
                 <a
                   href={`mailto:${info.email}`}
-                  className="transition-colors hover:text-accent"
+                  className="transition-colors hover:text-accent active:opacity-70 max-md:-my-1.5 max-md:inline-flex max-md:min-h-10 max-md:items-center max-md:py-1.5"
                 >
                   {info.email}
                 </a>
@@ -186,7 +186,7 @@ export default async function ContactPage({
             {departments.map((d) => (
               <div
                 key={d.name}
-                className="bg-gradient-to-b from-[#16191e] to-[#0f1216] p-8 transition-colors hover:from-[#1b1f25]"
+                className="bg-gradient-to-b from-[#16191e] to-[#0f1216] p-6 transition-colors hover:from-[#1b1f25] sm:p-8"
               >
                 <h3 className="font-display text-xl font-semibold text-fg">
                   {d.name}
@@ -196,7 +196,7 @@ export default async function ContactPage({
                     <p key={p}>
                       <a
                         href={`tel:${p.replace(/\s/g, "")}`}
-                        className="transition-colors hover:text-accent"
+                        className="transition-colors hover:text-accent active:opacity-70 max-md:-my-1 max-md:inline-flex max-md:min-h-10 max-md:items-center max-md:py-1"
                       >
                         {p}
                       </a>
@@ -208,7 +208,7 @@ export default async function ContactPage({
                   <p>
                     <a
                       href={`mailto:${d.email}`}
-                      className="transition-colors hover:text-accent"
+                      className="transition-colors hover:text-accent active:opacity-70 max-md:-my-1 max-md:inline-flex max-md:min-h-10 max-md:items-center max-md:py-1"
                     >
                       {d.email}
                     </a>

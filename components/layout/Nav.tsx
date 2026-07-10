@@ -66,7 +66,7 @@ export function Nav() {
             "mx-auto transition-[max-width,margin,padding] duration-500 ease-out",
             isSolid
               ? "mt-3 max-w-[calc(var(--container-wide)+1.5rem)] px-3 md:px-6"
-              : "mt-0 max-w-wide px-4 md:px-8 xl:px-12",
+              : "mt-0 max-w-wide px-5 md:px-8 xl:px-12",
           )}
         >
           <motion.div
@@ -103,7 +103,7 @@ export function Nav() {
             <Link
               href="/"
               aria-label="AutoHaus — Начало"
-              className="relative z-10 flex items-center transition-opacity hover:opacity-80"
+              className="relative z-10 -my-2 flex items-center py-2 transition-opacity hover:opacity-80"
             >
               <Image
                 src="/brand/logo.svg"

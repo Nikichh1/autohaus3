@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   motion,
   useTransform,
@@ -10,8 +11,10 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "framer-motion";
+import { ArrowRight, Phone } from "lucide-react";
 import { CinematicGrade } from "@/components/fx/CinematicGrade";
 import { StatCounter } from "@/components/motion/StatCounter";
+import { contactInfo } from "@/lib/nav";
 
 /**
  * The Opening Film — a scroll-driven cinematic entry into the dealership.
@@ -614,10 +617,10 @@ function BeatWord({
 }
 
 /**
- * The mobile opening — purpose-built, not scaled down. One graded title card:
- * poster, letterbox, the wordmark, the line and live proof — a single screen
- * that loads instantly and scrolls straight into the collection. No pin, no
- * canvas, no frame downloads: fluid on the oldest phone in the pocket.
+ * The mobile opening — a poster, not a film. One still, composed frame of the
+ * house at golden hour that paints instantly (no zoom, no scrub, no frame
+ * downloads), with the full hero grammar: the line, a real CTA pair and the
+ * live proof strip. Everything a first-time visitor needs is one thumb away.
  */
 function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
   const rise = (delay: number) => ({
@@ -628,9 +631,10 @@ function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
   return (
     <section className="relative flex h-[100svh] flex-col justify-end overflow-hidden bg-black" aria-label="Въведение">
       {/* The house at golden hour — a purpose-cut portrait crop of the
-          facility (no runtime pano-cropping, no upscaling), settling in one
-          slow cinematic breath. */}
-      <motion.img
+          facility (no runtime pano-cropping, no upscaling). Static: the
+          photograph carries the drama, the paint is instant. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/photos/autohaus-hero-m-1080.webp"
         srcSet="/photos/autohaus-hero-m-750.webp 750w, /photos/autohaus-hero-m-1080.webp 1080w"
         sizes="100vw"
@@ -639,18 +643,15 @@ function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
         // The phone LCP — fetch it at highest priority, before anything else.
         fetchPriority="high"
         decoding="async"
-        initial={{ scale: 1.14 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 9, ease: [0.16, 1, 0.3, 1] }}
         className="absolute inset-0 h-full w-full object-cover"
       />
       <CinematicGrade deep />
       {/* static letterbox + legibility base */}
       <div aria-hidden className="absolute inset-x-0 top-0 z-10 h-[4.5svh] bg-black" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 z-10 h-[4.5svh] bg-black" />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/45" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/45" />
 
-      <div className="relative z-20 px-6 pb-[11svh]">
+      <div className="relative z-20 px-6 pb-[9svh]">
         {/* The nav already carries the wordmark — the opening leads with the
             place and the line, never a second logo in the same frame. */}
         <motion.p {...rise(0.1)} className="label-fine flex items-center gap-3 text-accent">
@@ -658,13 +659,33 @@ function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
           {copy.eyebrow}
         </motion.p>
         <motion.p
-          {...rise(0.24)}
-          className="mt-4 max-w-[15ch] font-display text-[2rem] font-extrabold leading-[1.08] tracking-[-0.025em] text-white"
+          {...rise(0.22)}
+          className="mt-4 max-w-[16ch] font-display text-[clamp(2rem,8.4vw,2.5rem)] font-extrabold leading-[1.06] tracking-[-0.025em] text-white"
         >
           {copy.line1}{" "}
           <span className="text-white/60">{copy.line2}</span>
         </motion.p>
-        <motion.div {...rise(0.4)} className="mt-6 flex items-center gap-6 border-t border-white/15 pt-4">
+
+        {/* The hero's ask — browse the collection, or one tap to call */}
+        <motion.div {...rise(0.36)} className="mt-7 flex items-center gap-3">
+          <Link
+            href="/avtomobili"
+            className="flex h-[3.25rem] flex-1 items-center justify-center gap-2 rounded-full bg-white font-display text-[15px] font-bold tracking-tight text-[#08090c] transition-transform duration-150 ease-out active:scale-[0.97]"
+          >
+            Разгледай колекцията
+            <ArrowRight className="size-4" />
+          </Link>
+          <a
+            href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
+            aria-label={`Обадете се: ${contactInfo.phone}`}
+            className="flex size-[3.25rem] shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/[0.06] text-white backdrop-blur-md transition-transform duration-150 active:scale-90"
+          >
+            <Phone className="size-[1.15rem]" strokeWidth={1.7} />
+          </a>
+        </motion.div>
+
+        {/* live proof — the trust footer of the poster */}
+        <motion.div {...rise(0.5)} className="mt-7 flex items-center gap-6 border-t border-white/15 pt-4">
           {PROOF_MOBILE.map(([to, suffix, label]) => (
             <div key={label} className="min-w-0">
               <p className="font-display text-xl font-extrabold leading-none text-white">
@@ -674,7 +695,7 @@ function MobileOpening({ copy = DEFAULT_INTRO_COPY }: { copy?: IntroCopy }) {
             </div>
           ))}
         </motion.div>
-        <motion.p {...rise(0.55)} className="label-fine mt-7 flex items-center gap-3 text-white/60">
+        <motion.p {...rise(0.62)} className="label-fine mt-6 flex items-center gap-3 text-white/60">
           {copy.scrollHint}
           <span className="vd-scrollcue block h-6 w-px bg-white/60" />
         </motion.p>

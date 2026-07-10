@@ -118,7 +118,7 @@ export function CinematicHero({
           {monthly > 0 && (
             <a
               href="#financing"
-              className="inline-flex items-center gap-1 text-[13px] font-medium text-fg-muted transition-colors hover:text-accent"
+              className="-my-2 inline-flex items-center gap-1 py-2 text-[13px] font-medium text-fg-muted transition-colors hover:text-accent active:opacity-70"
             >
               ≈ {formatPriceEUR(monthly)} / мес
               <ChevronRight className="size-3.5" aria-hidden />
@@ -184,7 +184,7 @@ export function CinematicHero({
         <nav aria-label="Навигация" className="mb-7 md:mb-9">
           <Link
             href="/avtomobili"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.14em] text-fg-muted transition-colors hover:text-fg sm:hidden"
+            className="-my-2.5 inline-flex items-center gap-1.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.14em] text-fg-muted transition-colors hover:text-fg active:opacity-70 sm:hidden"
           >
             <ArrowLeft className="size-3.5" /> Автомобили
           </Link>

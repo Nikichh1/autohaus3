@@ -670,6 +670,28 @@
   }
 }
 
+/* ── Film-sheet seam — flattened on phones ──
+   The `.sheet` seam (rounded top corners + drop shadow + specular hairline +
+   a negative-margin overlap) is the desktop "each chapter slides over the last
+   like a card of film stock" effect. On a phone it misfires: the incoming
+   section reads as a separate card floating over the one above — the previous
+   section's colour bleeds around the rounded top corners and every seam shows a
+   step. That repeats down the whole homepage. Phones instead get clean,
+   full-width colour transitions: no radius, no shadow, no hairline, no overlap
+   (the Collection already dropped its pull-up on phones via `max-md:mt-0`; this
+   extends the same intent to every sheet). Unlayered so it beats the Tailwind
+   margin/-radius utilities. Desktop keeps the sliding-sheet effect untouched. */
+@media (max-width: 767px) {
+  .sheet {
+    margin-top: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .sheet::after {
+    display: none;
+  }
+}
+
 /* SSR gate for the homepage films. The heavy scroll-scrubbed sections and the
    purpose-built phone scenes are BOTH in the server HTML, gated by these
    classes, so a phone never flashes (or lays out) the 380vh desktop film while
