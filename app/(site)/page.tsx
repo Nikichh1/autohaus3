@@ -63,8 +63,11 @@ export default async function HomePage() {
           light "hero", and as its tail scrolls into the Manifesto the entire
           theme — background, text, icons, borders, cards — morphs to black as
           one continuous, reversible motion. The boundary marker sits at the
-          seam and defines where light has fully become dark. */}
-      <ScrollThemeMorph>
+          seam and defines where light has fully become dark. `bgLayer` paints
+          the background on a GPU opacity crossfade (zero repaint per frame) so
+          the scrub stays butter-smooth on phones; the sections go transparent
+          while the morph is active so the pane shows through. */}
+      <ScrollThemeMorph bgLayer bgClassName="morph-bg-sheet">
         <CollectionGallery
           vehicles={featured}
           total={all.length}

@@ -29,10 +29,11 @@ const DEFAULT_STATEMENT =
 export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: string }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
-  // Inside the scroll-morph zone the background is owned by the shared token
-  // ramp, so we shed the section's own `field-graphite` fill and the `.sheet`
-  // seam (which would draw a hard line mid-morph) and paint `bg-base` — it
-  // arrives fully dark exactly as the light section above finishes darkening.
+  // Inside the scroll-morph zone the background is owned by the wrapper's
+  // GPU-composited pane, so we shed the section's own `field-graphite` fill and
+  // the `.sheet` seam (which would draw a hard line mid-morph) and go
+  // transparent — the pane behind arrives fully dark exactly as the light
+  // section above finishes darkening, with zero per-frame repaint here.
   const morph = useThemeMorph()?.active ?? false;
   const WORDS = statement.trim().split(/\s+/);
   // Phones keep the true blur-to-focus, but words share a focus group of three
@@ -71,7 +72,7 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
       data-chapter="02"
       data-chapter-label="Философия"
       className={`relative -mt-[8vh] hidden h-[150vh] md:block md:h-[170vh] ${
-        morph ? "bg-base" : "sheet field-graphite"
+        morph ? "" : "sheet field-graphite"
       }`}
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
@@ -158,7 +159,7 @@ function MobilePhilosophy({
     <section
       aria-label="Философия"
       className={`relative -mt-[8vh] flex min-h-[88svh] flex-col justify-center overflow-hidden md:hidden ${
-        morph ? "bg-base" : "sheet field-graphite"
+        morph ? "" : "sheet field-graphite"
       }`}
     >
       {/* atmosphere — brushed metal + masked measurement grid + titanium glow */}

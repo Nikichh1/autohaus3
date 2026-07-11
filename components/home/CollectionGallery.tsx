@@ -42,10 +42,11 @@ const SPANS = ["lg:col-span-4", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2
 
 export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Props) {
   // When inside the scroll-morph zone, the theme (background + all tokens) is
-  // driven by the wrapper, so we drop the static `.light`/`bg-[#eef0f2]` and
-  // paint the token background instead — it morphs light→dark on scroll. The
-  // `data-rail-theme` keeps the chapter rail contrasting correctly even without
-  // the `.light` class it used to sniff for.
+  // driven by the wrapper, so we drop the static `.light`/`bg-[#eef0f2]` and go
+  // TRANSPARENT — the wrapper's GPU-composited pane paints the morphing
+  // background behind us (opacity crossfade, no per-frame repaint of this tall
+  // section). The `data-rail-theme` keeps the chapter rail contrasting
+  // correctly even without the `.light` class it used to sniff for.
   const active = useThemeMorph()?.active ?? false;
   if (!vehicles.length) return null;
   const remaining = Math.max(total - vehicles.length, 0);
@@ -58,7 +59,7 @@ export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Prop
       // Phones drop the sheet's pull-up: the opening is a single screen there,
       // and a white sliver riding over its letterbox reads as a glitch.
       className={`sheet relative -mt-[10vh] py-16 max-md:mt-0 md:py-[13vh] ${
-        active ? "bg-base" : "light bg-[#eef0f2]"
+        active ? "" : "light bg-[#eef0f2]"
       }`}
     >
       <div className="mx-auto max-w-wide px-5 sm:px-8 md:px-12">

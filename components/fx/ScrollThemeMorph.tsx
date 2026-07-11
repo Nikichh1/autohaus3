@@ -133,6 +133,7 @@ export function ScrollThemeMorph({
   bandStart = DEFAULT_BAND_START,
   bandEnd = DEFAULT_BAND_END,
   bgLayer = false,
+  bgClassName,
 }: {
   children: React.ReactNode;
   /**
@@ -155,6 +156,11 @@ export function ScrollThemeMorph({
    * what makes the morph flawless on phones. Pairs with `restLight`.
    */
   bgLayer?: boolean;
+  /**
+   * Extra class for the composited background box — e.g. a clip that rounds its
+   * top corners to match the homepage's `.sheet` film-card radius.
+   */
+  bgClassName?: string;
 }) {
   const reduce = useReducedMotion();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -197,7 +203,10 @@ export function ScrollThemeMorph({
     const top = b.getBoundingClientRect().top;
     const raw = (bandStart * vh - top) / ((bandStart - bandEnd) * vh);
     const p = ease(raw);
-    if (Math.abs(p - lastP.current) < 0.001) return;
+    // 1/255 ≈ 0.004 — steps finer than an 8-bit colour channel can't paint any
+    // differently, so skipping them costs nothing visually and quarters the
+    // style-recalc work during the band (matters on phones).
+    if (Math.abs(p - lastP.current) < 0.004 && p !== 0 && p !== 1) return;
     lastP.current = p;
     // Background: composited opacity (cheap). Foreground tokens: text/borders/
     // small card surfaces (a light paint). The heavy full-viewport background
@@ -228,7 +237,7 @@ export function ScrollThemeMorph({
               via opacity (GPU, no repaint); layout is untouched (absolute box). */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-0"
+            className={`pointer-events-none absolute inset-0 z-0 ${bgClassName ?? ""}`}
           >
             <div className="sticky top-0 h-screen w-full">
               <div className="absolute inset-0" style={{ backgroundColor: BASE_LIGHT }} />

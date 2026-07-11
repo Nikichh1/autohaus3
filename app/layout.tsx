@@ -84,7 +84,13 @@ export default function RootLayout({
       className={`${inter.variable} ${manrope.variable} ${playfair.variable} ${oswald.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-base text-fg font-sans">{children}</body>
+      <body className="min-h-screen bg-base text-fg font-sans">
+        {/* Vehicle photography is still served from the legacy WordPress host —
+            warm up DNS + TLS before the first card image is requested. React
+            hoists this into <head>. */}
+        <link rel="preconnect" href="https://autohaus.bg" />
+        {children}
+      </body>
     </html>
   );
 }

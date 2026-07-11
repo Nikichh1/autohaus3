@@ -692,6 +692,18 @@
   }
 }
 
+/* ── Composited morph background (ScrollThemeMorph bgLayer) ──
+   On md+ the homepage morph zone opens with the Collection's `.sheet` card
+   riding over the intro film, so the GPU background pane behind it must clip
+   to the same machined top radius — otherwise square white corners would poke
+   out over the dark footage. clip-path (not overflow) so the sticky pane
+   inside keeps pinning. Phones flatten the sheet, so no clip there. */
+@media (min-width: 768px) {
+  .morph-bg-sheet {
+    clip-path: inset(0 round 1.25rem 1.25rem 0 0);
+  }
+}
+
 /* SSR gate for the homepage films. The heavy scroll-scrubbed sections and the
    purpose-built phone scenes are BOTH in the server HTML, gated by these
    classes, so a phone never flashes (or lays out) the 380vh desktop film while
