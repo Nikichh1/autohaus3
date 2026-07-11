@@ -4,9 +4,15 @@ import { useEffect, useRef, useState } from "react";
 
 type Chapter = { num: string; label: string; el: HTMLElement };
 
-/** Is the section a light one? (the Collection is `.light`.) */
+/** Is the section a light one? The Collection used to be sniffed via `.light`,
+ *  but inside the scroll-morph zone it sheds that class (the theme is driven by
+ *  interpolated tokens instead), so it advertises `data-rail-theme="light"`. */
 function isLightSection(el: HTMLElement): boolean {
-  return el.classList.contains("light") || !!el.closest(".light");
+  return (
+    el.dataset.railTheme === "light" ||
+    el.classList.contains("light") ||
+    !!el.closest(".light")
+  );
 }
 
 /**

@@ -223,9 +223,14 @@ export default async function ContactPage({
         </div>
       </div>
 
-      {/* Map */}
+      {/* Map — exact showroom coordinates (ул. „Нестор Абаджиев" 24, Пловдив) */}
       <div className="mt-24 h-[420px] w-full overflow-hidden border-y border-line md:h-[520px]">
-        <MapEmbed query="Пловдив, България" title="AutoHaus локация — Пловдив" />
+        <MapEmbed
+          lat={42.120717}
+          lng={24.773724}
+          label={`${info.address.street}, ${info.address.city}`}
+          title="AutoHaus локация — ул. „Нестор Абаджиев“ №24, Пловдив"
+        />
       </div>
     </div>
   );

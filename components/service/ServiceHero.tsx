@@ -9,23 +9,32 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { Reveal } from "@/components/motion/Reveal";
+import { FadeIn } from "@/components/motion/FadeIn";
+import { ButtonLink } from "@/components/ui/Button";
 
 type ServiceHeroProps = {
   label: string;
   tagline: string;
   image: string;
+  index?: string;
 };
 
-export function ServiceHero({ label, tagline, image }: ServiceHeroProps) {
+/**
+ * Service hero — a light editorial opening (the light end of the page's
+ * light→dark scroll morph). Instead of stretching a modest-resolution photo to
+ * a full-bleed 88vh banner (which read soft), the image lives in a CONTAINED,
+ * machined frame at ~44vw — where the source is pixel-crisp — with a restrained
+ * parallax inside the frame. Everything paints from theme tokens, so the hero
+ * belongs to the morph like the rest of the page.
+ */
+export function ServiceHero({ label, tagline, image, index }: ServiceHeroProps) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
-  // Touch devices hold the hero still — a scroll-scrubbed scale/translate on
-  // the largest image on the page is a real jank source on older phones, and
-  // at scroll 0 (page load) the transform is already identity, so dropping it
-  // is invisible. Desktop keeps the parallax.
+  // Touch devices hold the image still — a scroll-scrubbed transform on the
+  // largest asset is a real jank source on older phones, and at scroll 0 it is
+  // already identity, so dropping it is invisible. Desktop keeps the parallax.
   const [motionOn, setMotionOn] = useState(true);
   useEffect(() => {
-    // Mount-time capability check — mirrors the site's other isMobile gates.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMotionOn(window.matchMedia("(pointer: fine)").matches);
   }, []);
@@ -34,60 +43,84 @@ export function ServiceHero({ label, tagline, image }: ServiceHeroProps) {
     target: ref,
     offset: ["start start", "end start"],
   });
-  const y = useTransform(
-    scrollYProgress,
-    [0, 1],
-    still ? ["0%", "0%"] : ["0%", "18%"],
-  );
-  const scale = useTransform(
-    scrollYProgress,
-    [0, 1],
-    still ? [1, 1] : [1, 1.12],
-  );
+  const y = useTransform(scrollYProgress, [0, 1], still ? ["0%", "0%"] : ["-6%", "6%"]);
+  const scale = useTransform(scrollYProgress, [0, 1], still ? [1, 1] : [1.06, 1.14]);
 
   return (
     <section
       ref={ref}
-      className="relative flex h-[88vh] min-h-[560px] w-full items-end overflow-hidden bg-black"
+      className="relative overflow-hidden pt-32 pb-14 md:pt-40 md:pb-24"
     >
-      <motion.div style={{ y, scale }} className="absolute inset-0">
-        <Image
-          src={image}
-          alt={label}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-      </motion.div>
-      <div className="absolute inset-0 bg-gradient-to-t from-base via-base/45 to-base/20" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-base/70 to-transparent" />
-      <div aria-hidden className="pointer-events-none absolute inset-5 hidden md:inset-6 md:block">
-        <span className="absolute left-0 top-0 h-9 w-9 border-l border-t border-white/20" />
-        <span className="absolute right-0 top-0 h-9 w-9 border-r border-t border-white/20" />
-        <span className="absolute bottom-0 left-0 h-9 w-9 border-b border-l border-white/20" />
-        <span className="absolute bottom-0 right-0 h-9 w-9 border-b border-r border-white/20" />
-      </div>
+      {/* Oversized service numeral — a quiet editorial watermark */}
+      {index ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-[-3%] top-20 select-none font-display text-[30vw] font-extrabold leading-none tracking-tighter text-fg/[0.035] lg:text-[17vw]"
+        >
+          {index}
+        </span>
+      ) : null}
 
-      <div className="relative z-10 w-full pb-20 md:pb-28">
-        <div className="mx-auto w-full max-w-wide px-5 md:px-8 xl:px-12">
+      <div className="mx-auto grid max-w-wide items-center gap-10 px-5 md:px-8 lg:grid-cols-12 lg:gap-16 xl:px-12">
+        {/* Copy */}
+        <div className="lg:col-span-6">
           <Reveal>
             <p className="flex items-center gap-3 text-accent">
-              <span className="h-px w-8 bg-accent/50" />
-              <span className="label-fine">Услуга</span>
+              <span className="h-px w-10 bg-accent/50" />
+              <span className="label-fine">Услуга{index ? ` · ${index}` : ""}</span>
             </p>
           </Reveal>
-          <Reveal delay={0.1}>
-            <h1 className="mt-6 font-display text-display-sm font-extrabold leading-[0.95] tracking-tight text-fg md:text-display-lg">
+          <Reveal delay={0.08}>
+            <h1 className="mt-6 font-display text-display-sm font-extrabold leading-[0.92] tracking-[-0.03em] text-fg md:text-display-lg">
               {label}
             </h1>
           </Reveal>
-          <Reveal delay={0.22}>
-            <p className="mt-6 max-w-xl text-lg text-fg/80 md:text-xl">
+          <FadeIn delay={0.2}>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-fg-muted md:text-xl">
               {tagline}
             </p>
-          </Reveal>
+          </FadeIn>
+          <FadeIn delay={0.32}>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <ButtonLink href="/kontakti" variant="solid" size="lg" arrow>
+                Запитване
+              </ButtonLink>
+              <ButtonLink href="/avtomobili" variant="ghost" size="lg">
+                Автомобилите
+              </ButtonLink>
+            </div>
+          </FadeIn>
         </div>
+
+        {/* Framed image — contained, machined, crisp */}
+        <FadeIn delay={0.15} className="lg:col-span-6">
+          <div className="relative mx-auto w-full max-w-sm lg:ml-auto lg:max-w-none">
+            {/* corner ticks */}
+            <span aria-hidden className="absolute -left-3 -top-3 z-10 size-8 border-l border-t border-accent/40" />
+            <span aria-hidden className="absolute -bottom-3 -right-3 z-10 size-8 border-b border-r border-accent/40" />
+            <div className="edge-light relative aspect-[4/5] w-full overflow-hidden rounded-[1.5rem] border border-line-strong shadow-cinema">
+              <motion.div style={{ y, scale }} className="absolute inset-0">
+                <Image
+                  src={image}
+                  alt={label}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 44vw, (min-width: 768px) 60vw, 100vw"
+                  className="object-cover"
+                />
+              </motion.div>
+              {/* soft top gloss so the frame reads as glass, not a flat crop */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 22%, transparent 72%, rgba(0,0,0,0.28) 100%)",
+                }}
+              />
+            </div>
+          </div>
+        </FadeIn>
       </div>
     </section>
   );

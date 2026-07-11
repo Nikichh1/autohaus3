@@ -61,10 +61,9 @@ app/
     [slug]/page.tsx       # vehicle detail (SSG via generateStaticParams)
   zastrahovki|lizing|serviz|auto-spa|kafe-bar/page.tsx   # service pages (shared template)
   kontakti/page.tsx       # contact
-  za-nas|kariera|novini|politika-poveritelnost|...       # footer placeholder pages
 
 components/
-  layout/    Nav, Footer, MobileMenu, PlaceholderPage
+  layout/    Nav, Footer, MobileMenu
   ui/        Button, Input, Select, Container, Section
   motion/    SmoothScroll, FadeIn, Reveal, MaskReveal, Parallax, PinnedScene, Stagger, StatCounter
   sections/  HomeHero, FeaturedVehicles, ServicesGrid, BrandStory, WhyAutoHaus, LatestArrivals, HomeFooterCTA
@@ -185,8 +184,7 @@ Search the codebase for `TODO` — every placeholder is marked. The key ones:
 4. **Stats** — `components/sections/WhyAutoHaus.tsx` (`stats` array: years, cars sold, brands, satisfaction).
 5. **Financing rate** — managed from the admin: **Настройки → Лизинг и финансиране** (annual rate, default down‑payment %, default term). Drives both the public `FinancingCalculator` and the indicative monthly payment shown on each vehicle page. Defaults live in `lib/settings/config.ts` (`financingSchema`); the calculator is indicative only.
 6. **Forms** — `ContactForm` and `VehicleInquiryForm` currently show a success state on submit. Wire `handleSubmit` to a real endpoint (e.g. `POST /api/contact` or an email service).
-7. **Legal pages** — `za-nas`, `kariera`, `novini`, `politika-poveritelnost`, `obshti-usloviya`, `bisquitki` are branded "in preparation" placeholders.
-8. **Logo / hero** — real assets live in `public/brand/` (`logo.svg`, `home-bg.jpg`).
+7. **Logo / hero** — real assets live in `public/brand/` (`logo.svg`, `home-bg.jpg`).
 
 ### Internationalization
 

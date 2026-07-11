@@ -9,6 +9,7 @@ import {
   cubicBezier,
   type MotionValue,
 } from "framer-motion";
+import { useThemeMorph } from "@/components/fx/ScrollThemeMorph";
 const REVEAL_EASE = cubicBezier(0.45, 0, 0.55, 1);
 const ENTRANCE_EASE = cubicBezier(0.16, 1, 0.3, 1);
 
@@ -28,6 +29,11 @@ const DEFAULT_STATEMENT =
 export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: string }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  // Inside the scroll-morph zone the background is owned by the shared token
+  // ramp, so we shed the section's own `field-graphite` fill and the `.sheet`
+  // seam (which would draw a hard line mid-morph) and paint `bg-base` — it
+  // arrives fully dark exactly as the light section above finishes darkening.
+  const morph = useThemeMorph()?.active ?? false;
   const WORDS = statement.trim().split(/\s+/);
   // Phones keep the true blur-to-focus, but words share a focus group of three
   // so the scene animates ~6 filter layers instead of 17 — cinematic on a
@@ -58,13 +64,15 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
         the wind-tunnel streamlines draw in beneath it. */}
     {/* No data-chapter here — the chapter rail is desktop-only and must keep
         exactly one owner of "02" (the pinned section below). */}
-    <MobilePhilosophy words={WORDS} reduce={!!reduce} />
+    <MobilePhilosophy words={WORDS} reduce={!!reduce} morph={morph} />
 
     <section
       ref={ref}
       data-chapter="02"
       data-chapter-label="Философия"
-      className="sheet field-graphite relative -mt-[8vh] hidden h-[150vh] md:block md:h-[170vh]"
+      className={`relative -mt-[8vh] hidden h-[150vh] md:block md:h-[170vh] ${
+        morph ? "bg-base" : "sheet field-graphite"
+      }`}
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden">
         {/* atmosphere */}
@@ -133,7 +141,15 @@ export function ManifestoDrive({ statement = DEFAULT_STATEMENT }: { statement?: 
  * wind-tunnel streamlines drawing across the floor — all fired once when the
  * section enters (no scrub, no SSR smear). Reads like the PC, runs like a phone.
  */
-function MobilePhilosophy({ words, reduce }: { words: string[]; reduce: boolean }) {
+function MobilePhilosophy({
+  words,
+  reduce,
+  morph,
+}: {
+  words: string[];
+  reduce: boolean;
+  morph: boolean;
+}) {
   const chunks: string[] = [];
   for (let i = 0; i < words.length; i += 3)
     chunks.push(words.slice(i, i + 3).join(" "));
@@ -141,7 +157,9 @@ function MobilePhilosophy({ words, reduce }: { words: string[]; reduce: boolean 
   return (
     <section
       aria-label="Философия"
-      className="sheet field-graphite relative -mt-[8vh] flex min-h-[88svh] flex-col justify-center overflow-hidden md:hidden"
+      className={`relative -mt-[8vh] flex min-h-[88svh] flex-col justify-center overflow-hidden md:hidden ${
+        morph ? "bg-base" : "sheet field-graphite"
+      }`}
     >
       {/* atmosphere — brushed metal + masked measurement grid + titanium glow */}
       <div aria-hidden className="brushed pointer-events-none absolute inset-0 opacity-[0.05]" />

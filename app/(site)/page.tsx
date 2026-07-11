@@ -9,6 +9,7 @@ import { HouseScene } from "@/components/home/HouseScene";
 import { FinaleScene } from "@/components/home/FinaleScene";
 import { MobileStickyCTA } from "@/components/home/MobileStickyCTA";
 import { ChapterRail } from "@/components/fx/ChapterRail";
+import { ScrollThemeMorph, ThemeMorphBoundary } from "@/components/fx/ScrollThemeMorph";
 import { getFeaturedVehicles, getAllPublicVehicles } from "@/lib/data/vehicles";
 import { getContent } from "@/lib/cms/read";
 
@@ -58,16 +59,24 @@ export default async function HomePage() {
           scrollHint: cms["home.intro.scrollHint"],
         }}
       />
-      <CollectionGallery
-        vehicles={featured}
-        total={all.length}
-        copy={{
-          eyebrow: cms["home.collection.eyebrow"],
-          heading: cms["home.collection.heading"],
-          subcopy: cms["home.collection.subcopy"],
-        }}
-      />
-      <ManifestoDrive statement={cms["home.manifesto.statement"]} />
+      {/* The scroll-scrubbed light→dark handoff: the Collection reads as the
+          light "hero", and as its tail scrolls into the Manifesto the entire
+          theme — background, text, icons, borders, cards — morphs to black as
+          one continuous, reversible motion. The boundary marker sits at the
+          seam and defines where light has fully become dark. */}
+      <ScrollThemeMorph>
+        <CollectionGallery
+          vehicles={featured}
+          total={all.length}
+          copy={{
+            eyebrow: cms["home.collection.eyebrow"],
+            heading: cms["home.collection.heading"],
+            subcopy: cms["home.collection.subcopy"],
+          }}
+        />
+        <ThemeMorphBoundary />
+        <ManifestoDrive statement={cms["home.manifesto.statement"]} />
+      </ScrollThemeMorph>
       <MachineScene
         copy={{
           title: cms["home.machine.title"],

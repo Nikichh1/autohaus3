@@ -110,8 +110,8 @@ export function StandardScene({ copy = DEFAULT_COPY }: { copy?: StandardCopy }) 
 
             <FadeIn delay={0.26}>
               <div className="mt-8">
-                <ButtonLink href="/za-nas" variant="ghost" size="md" arrow>
-                  Повече за нас
+                <ButtonLink href="/kontakti" variant="ghost" size="md" arrow>
+                  Свържете се с нас
                 </ButtonLink>
               </div>
             </FadeIn>

@@ -13,6 +13,7 @@ import { FadeIn } from "@/components/motion/FadeIn";
 import { Reveal } from "@/components/motion/Reveal";
 import { Magnetic } from "@/components/fx/Magnetic";
 import { usePageTransition } from "@/components/transition/PageTransition";
+import { useThemeMorph } from "@/components/fx/ScrollThemeMorph";
 
 type CollectionCopy = { eyebrow: string; heading: string; subcopy: string };
 type Props = { vehicles: Vehicle[]; total: number; copy?: CollectionCopy };
@@ -40,6 +41,12 @@ const DEFAULT_COPY: CollectionCopy = {
 const SPANS = ["lg:col-span-4", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2", "lg:col-span-2"];
 
 export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Props) {
+  // When inside the scroll-morph zone, the theme (background + all tokens) is
+  // driven by the wrapper, so we drop the static `.light`/`bg-[#eef0f2]` and
+  // paint the token background instead — it morphs light→dark on scroll. The
+  // `data-rail-theme` keeps the chapter rail contrasting correctly even without
+  // the `.light` class it used to sniff for.
+  const active = useThemeMorph()?.active ?? false;
   if (!vehicles.length) return null;
   const remaining = Math.max(total - vehicles.length, 0);
 
@@ -47,9 +54,12 @@ export function CollectionGallery({ vehicles, total, copy = DEFAULT_COPY }: Prop
     <section
       data-chapter="01"
       data-chapter-label="Колекция"
+      data-rail-theme="light"
       // Phones drop the sheet's pull-up: the opening is a single screen there,
       // and a white sliver riding over its letterbox reads as a glitch.
-      className="sheet light relative -mt-[10vh] bg-[#eef0f2] py-16 max-md:mt-0 md:py-[13vh]"
+      className={`sheet relative -mt-[10vh] py-16 max-md:mt-0 md:py-[13vh] ${
+        active ? "bg-base" : "light bg-[#eef0f2]"
+      }`}
     >
       <div className="mx-auto max-w-wide px-5 sm:px-8 md:px-12">
         {/* Header */}

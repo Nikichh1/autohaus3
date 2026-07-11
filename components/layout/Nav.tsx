@@ -46,15 +46,11 @@ export function Nav() {
     my.set(e.clientY - r.top);
   };
 
-  const transparentRoutes = [
-    "/",
-    "/pod-naem",
-    "/zastrahovki",
-    "/lizing",
-    "/serviz",
-    "/auto-spa",
-    "/kafe-bar",
-  ];
+  // The service pages now open on a LIGHT hero, where the transparent nav's
+  // white logo + light text would vanish. Keep them solid (glass on) from the
+  // top so the header is always legible; only genuinely dark-topped routes stay
+  // transparent.
+  const transparentRoutes = ["/", "/pod-naem"];
   const allowsTransparent = transparentRoutes.includes(pathname);
   const isSolid = scrolled || !allowsTransparent;
 

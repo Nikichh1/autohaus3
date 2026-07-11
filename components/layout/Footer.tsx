@@ -5,19 +5,6 @@ import { services } from "@/lib/nav";
 import { getSettings } from "@/lib/settings/read";
 import { FacebookIcon, InstagramIcon, YouTubeIcon } from "@/components/icons/brand";
 
-const company = [
-  { href: "/za-nas", label: "За нас" },
-  { href: "/kontakti", label: "Контакти" },
-  { href: "/kariera", label: "Кариери" },
-  { href: "/novini", label: "Новини" },
-];
-
-const legal = [
-  { href: "/politika-poveritelnost", label: "Политика за поверителност" },
-  { href: "/obshti-usloviya", label: "Общи условия" },
-  { href: "/bisquitki", label: "Бисквитки" },
-];
-
 export async function Footer() {
   const { contact, social, branding } = await getSettings();
   return (
@@ -26,11 +13,11 @@ export async function Footer() {
         className="mx-auto max-w-(--container-wide) px-5 pt-24 md:px-8 md:pt-32 xl:px-12"
         style={{ paddingBottom: "max(3rem, calc(2rem + env(safe-area-inset-bottom)))" }}
       >
-        {/* Phones: brand and contacts full-width, the two link columns side by
-            side — half the scroll, same hierarchy. md+ is untouched. */}
+        {/* Phones: brand and contacts full-width, the services column half-width
+            — half the scroll, same hierarchy. md+ is untouched. */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-12 md:gap-12">
           {/* Brand block */}
-          <div className="col-span-2 md:col-span-5">
+          <div className="col-span-2 md:col-span-6">
             <Link href="/" aria-label="AutoHaus — Начало">
               <Image
                 src="/brand/logo.svg"
@@ -65,24 +52,13 @@ export async function Footer() {
           </div>
 
           {/* Columns */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-3">
             <FooterHeading>Услуги</FooterHeading>
             <ul className="mt-5 space-y-3">
               <FooterLink href="/avtomobili">Автомобили</FooterLink>
               {services.map((s) => (
                 <FooterLink key={s.href} href={s.href}>
                   {s.label}
-                </FooterLink>
-              ))}
-            </ul>
-          </div>
-
-          <div className="md:col-span-2">
-            <FooterHeading>Компания</FooterHeading>
-            <ul className="mt-5 space-y-3">
-              {company.map((c) => (
-                <FooterLink key={c.href} href={c.href}>
-                  {c.label}
                 </FooterLink>
               ))}
             </ul>
@@ -119,22 +95,10 @@ export async function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-20 flex flex-col gap-4 border-t border-line pt-8 text-xs text-fg-subtle md:flex-row md:items-center md:justify-between">
+        <div className="mt-20 border-t border-line pt-8 text-xs text-fg-subtle">
           <p>
             © {new Date().getFullYear()} {contact.company} · ЕИК {contact.eik}. Всички права запазени.
           </p>
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            {legal.map((l) => (
-              <li key={l.href}>
-                <Link
-                  href={l.href}
-                  className="transition-colors hover:text-fg-muted max-md:inline-flex max-md:min-h-9 max-md:items-center"
-                >
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </footer>
