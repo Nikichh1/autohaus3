@@ -85,6 +85,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-base text-fg font-sans">
+        {/* Device-tier gate — runs synchronously BEFORE anything below paints.
+            Touch devices with genuinely weak hardware (≤4 GB RAM where exposed,
+            or ≤4 cores — old/low-end phones) get `html.lowend`, which lets CSS
+            trade the few effects that physically can't run smoothly there
+            (per-frame backdrop blur, animated image deblur) for fluid scrolling.
+            Every other phone keeps 100% of the design — no compromises. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{var n=navigator;if(matchMedia("(pointer: coarse)").matches&&((n.deviceMemory&&n.deviceMemory<=4)||(n.hardwareConcurrency&&n.hardwareConcurrency<=4)))document.documentElement.classList.add("lowend")}catch(e){}',
+          }}
+        />
         {/* Vehicle photography is still served from the legacy WordPress host —
             warm up DNS + TLS before the first card image is requested. React
             hoists this into <head>. */}
