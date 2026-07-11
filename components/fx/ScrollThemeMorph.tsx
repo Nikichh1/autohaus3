@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useAnimationFrame, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 
 /**
  * ScrollThemeMorph — a Porsche-grade, scroll-scrubbed light→dark transition.
@@ -168,6 +168,7 @@ export function ScrollThemeMorph({
   const overlayRef = useRef<HTMLDivElement>(null);
   const enabled = useRef(false);
   const lastP = useRef(-1);
+  const scheduleRef = useRef<(() => void) | null>(null);
 
   const [active, setActive] = useState(false);
 
@@ -179,7 +180,7 @@ export function ScrollThemeMorph({
     setActive(true);
   }, [reduce]);
 
-  // Only run the per-frame math while the zone is anywhere near the viewport.
+  // Only compute while the zone is anywhere near the viewport.
   useEffect(() => {
     if (!active) return;
     const el = wrapRef.current;
@@ -187,6 +188,8 @@ export function ScrollThemeMorph({
     const io = new IntersectionObserver(
       ([e]) => {
         enabled.current = e.isIntersecting;
+        // Entering the zone (e.g. a deep-link landing mid-page): sync at once.
+        if (e.isIntersecting) scheduleRef.current?.();
       },
       { rootMargin: "40% 0px 40% 0px" },
     );
@@ -194,28 +197,50 @@ export function ScrollThemeMorph({
     return () => io.disconnect();
   }, [active]);
 
-  useAnimationFrame(() => {
-    if (!active || !enabled.current) return;
-    const b = boundaryRef.current;
-    const w = wrapRef.current;
-    if (!b || !w) return;
-    const vh = window.innerHeight || 1;
-    const top = b.getBoundingClientRect().top;
-    const raw = (bandStart * vh - top) / ((bandStart - bandEnd) * vh);
-    const p = ease(raw);
-    // 1/255 ≈ 0.004 — steps finer than an 8-bit colour channel can't paint any
-    // differently, so skipping them costs nothing visually and quarters the
-    // style-recalc work during the band (matters on phones).
-    if (Math.abs(p - lastP.current) < 0.004 && p !== 0 && p !== 1) return;
-    lastP.current = p;
-    // Background: composited opacity (cheap). Foreground tokens: text/borders/
-    // small card surfaces (a light paint). The heavy full-viewport background
-    // paint is eliminated when bgLayer is on and the sections are transparent.
-    if (overlayRef.current) overlayRef.current.style.opacity = p.toFixed(3);
-    for (const [v, l, d] of RAMP) {
-      w.style.setProperty(v, mix(l, d, p));
-    }
-  });
+  // Event-driven, not a continuous rAF loop: scrolling schedules at most ONE
+  // rAF per frame, and an idle page does literally zero work — no permanent
+  // frameloop ticking in the background (matters on older phones' battery and
+  // main-thread headroom). Lenis (desktop) drives native window scroll, so the
+  // same `scroll` event covers both input paths.
+  useEffect(() => {
+    if (!active) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const b = boundaryRef.current;
+      const w = wrapRef.current;
+      if (!b || !w) return;
+      const vh = window.innerHeight || 1;
+      const top = b.getBoundingClientRect().top;
+      const raw = (bandStart * vh - top) / ((bandStart - bandEnd) * vh);
+      const p = ease(raw);
+      // 1/255 ≈ 0.004 — steps finer than an 8-bit colour channel can't paint
+      // any differently, so skipping them costs nothing visually and quarters
+      // the style-recalc work during the band (matters on phones).
+      if (Math.abs(p - lastP.current) < 0.004 && p !== 0 && p !== 1) return;
+      lastP.current = p;
+      // Background: composited opacity (cheap). Foreground tokens: text/
+      // borders/small card surfaces (a light paint). The heavy full-viewport
+      // background paint is gone when bgLayer is on (sections transparent).
+      if (overlayRef.current) overlayRef.current.style.opacity = p.toFixed(3);
+      for (const [v, l, d] of RAMP) {
+        w.style.setProperty(v, mix(l, d, p));
+      }
+    };
+    const schedule = () => {
+      if (!raf && enabled.current) raf = requestAnimationFrame(update);
+    };
+    scheduleRef.current = schedule;
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      cancelAnimationFrame(raf);
+      scheduleRef.current = null;
+    };
+  }, [active, bandStart, bandEnd]);
 
   const style = useMemo(
     () =>

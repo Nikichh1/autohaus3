@@ -36,8 +36,13 @@ export function ChapterRail() {
   const sections = useRef<{ top: number; light: boolean }[]>([]);
   const tickY = useRef<number[]>([]);
 
-  // discover the chapters once
+  // discover the chapters once — but only where the rail can exist (xl+). It
+  // is `hidden xl:flex` in CSS, yet without this gate phones would still pay
+  // for its scroll listener + per-frame arithmetic on every scroll. Skipping
+  // discovery keeps `chapters` empty → the component renders null and attaches
+  // nothing on small screens.
   useEffect(() => {
+    if (!window.matchMedia("(min-width: 1280px)").matches) return;
     const els = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setChapters(els.map((el) => ({ num: el.dataset.chapter ?? "", label: el.dataset.chapterLabel ?? "", el })));

@@ -615,14 +615,48 @@
   }
 }
 
-/* Touch devices lighten the image reveal: a 40px blur (blur-2xl) animating to
-   sharp on every image is a heavy per-frame GPU cost on older phones while
-   images stream in during a scroll. Cap the pending-state blur so the reveal
-   stays but the cost drops; hover devices keep the full deblur. */
+/* ── Touch devices: no backdrop filters, anywhere, ever. ──
+   A backdrop-filter element that moves relative to its backdrop (chips riding
+   on scrolling cards) or sits fixed OVER scrolling content (nav glass, sticky
+   CTA pill, vehicle sticky bar, catalog filter bar) forces the GPU to re-sample
+   and re-blur that region on EVERY scrolled frame — the single biggest scroll
+   cost on older phones. Hover devices keep the full frosted glass. */
 @media (hover: none), (pointer: coarse) {
-  .blur-img.blur-2xl {
-    --tw-blur: blur(10px);
-    filter: blur(10px);
+  /* Lightning CSS strips a raw `backdrop-filter` declaration from custom rules
+     (same toolchain quirk documented at `.glass-pane`), so the kill happens at
+     the VARIABLE level: Tailwind composes `backdrop-filter` from these
+     `--tw-backdrop-*` components with empty fallbacks — blanking them makes
+     every `backdrop-blur-*`/`backdrop-saturate-*` utility compute to `none`
+     (verified: computed style reads `none`). */
+  * {
+    --tw-backdrop-blur: initial !important;
+    --tw-backdrop-brightness: initial !important;
+    --tw-backdrop-contrast: initial !important;
+    --tw-backdrop-grayscale: initial !important;
+    --tw-backdrop-hue-rotate: initial !important;
+    --tw-backdrop-invert: initial !important;
+    --tw-backdrop-opacity: initial !important;
+    --tw-backdrop-saturate: initial !important;
+    --tw-backdrop-sepia: initial !important;
+  }
+  /* The two big glass surfaces (nav bar, sticky CTA) leaned on the blur for
+     legibility — compensate with a deeper fill so text stays crisp over any
+     photography. Same hairline, same shadow, same silhouette. */
+  .glass-pane {
+    background:
+      linear-gradient(180deg, rgb(245 247 249 / 0.06) 0%, rgb(245 247 249 / 0) 46%),
+      linear-gradient(180deg, rgb(17 20 25 / 0.88) 0%, rgb(8 9 12 / 0.94) 100%);
+  }
+}
+
+/* Touch devices drop the image-reveal BLUR entirely: animating `filter: blur`
+   on every card image while they stream in mid-scroll rasterizes each frame on
+   the GPU — a real cost on older phones. The reveal keeps its scale + opacity
+   resolve (both composited), so images still arrive softly, never pop. */
+@media (hover: none), (pointer: coarse) {
+  .blur-img {
+    --tw-blur: ;
+    filter: none !important;
   }
 }
 
